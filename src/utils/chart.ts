@@ -20,7 +20,7 @@ export const defaultSeriesPalette = [
 export const fallbackSeries: ChartSeriesConfig[] = [
   {
     key: 'net',
-    label: '净持仓',
+    label: 'Net Positions',
     labelKey: 'chart.series.net',
     type: 'area',
     yAxisId: 'left',
@@ -28,7 +28,7 @@ export const fallbackSeries: ChartSeriesConfig[] = [
   },
   {
     key: 'long',
-    label: '多头持仓',
+    label: 'Long Positions',
     labelKey: 'chart.series.long',
     type: 'line',
     yAxisId: 'left',
@@ -36,7 +36,7 @@ export const fallbackSeries: ChartSeriesConfig[] = [
   },
   {
     key: 'short',
-    label: '空头持仓',
+    label: 'Short Positions',
     labelKey: 'chart.series.short',
     type: 'line',
     yAxisId: 'left',
