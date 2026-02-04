@@ -1,0 +1,40 @@
+[
+  {
+    "key": "black",
+    "label": "黑色系",
+    "children": [
+      { "key": "black-iron", "label": "铁矿" },
+      { "key": "black-rebar", "label": "螺纹" },
+      { "key": "black-hot", "label": "热卷" },
+      { "key": "black-coal", "label": "焦煤" }
+    ]
+  },
+  {
+    "key": "agri",
+    "label": "农产品",
+    "children": [
+      { "key": "agri-meal", "label": "豆粕" },
+      { "key": "agri-corn", "label": "玉米" },
+      { "key": "agri-oil", "label": "棕榈" }
+    ]
+  },
+  {
+    "key": "energy",
+    "label": "能源化工",
+    "children": [
+      { "key": "energy-crude", "label": "原油" },
+      { "key": "energy-fuel", "label": "燃油" },
+      { "key": "energy-bitumen", "label": "沥青" }
+    ]
+  },
+  {
+    "key": "metal",
+    "label": "有色",
+    "children": [
+      { "key": "metal-cu", "label": "铜/CU" },
+      { "key": "metal-al", "label": "铝/AL" },
+      { "key": "metal-zn", "label": "锌/ZN" },
+      { "key": "metal-ni", "label": "镍/NI" }
+    ]
+  }
+]

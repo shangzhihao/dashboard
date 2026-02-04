@@ -312,6 +312,17 @@
   color: var(--text);
 }
 
+.panel-empty {
+  border-radius: 16px;
+  border: 1px dashed var(--border);
+  background: rgba(108, 104, 230, 0.08);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  padding: 60px 16px;
+}
+
 .panel-footer {
   margin-top: 16px;
   font-size: 11px;
