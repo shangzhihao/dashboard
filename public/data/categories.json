@@ -2,39 +2,43 @@
   {
     "key": "black",
     "label": "黑色系",
+    "labelKey": "category.black.title",
     "children": [
-      { "key": "black-iron", "label": "铁矿" },
-      { "key": "black-rebar", "label": "螺纹" },
-      { "key": "black-hot", "label": "热卷" },
-      { "key": "black-coal", "label": "焦煤" }
+      { "key": "black-iron", "label": "铁矿", "labelKey": "category.black.iron" },
+      { "key": "black-rebar", "label": "螺纹", "labelKey": "category.black.rebar" },
+      { "key": "black-hot", "label": "热卷", "labelKey": "category.black.hot" },
+      { "key": "black-coal", "label": "焦煤", "labelKey": "category.black.coal" }
     ]
   },
   {
     "key": "agri",
     "label": "农产品",
+    "labelKey": "category.agri.title",
     "children": [
-      { "key": "agri-meal", "label": "豆粕" },
-      { "key": "agri-corn", "label": "玉米" },
-      { "key": "agri-oil", "label": "棕榈" }
+      { "key": "agri-meal", "label": "豆粕", "labelKey": "category.agri.meal" },
+      { "key": "agri-corn", "label": "玉米", "labelKey": "category.agri.corn" },
+      { "key": "agri-oil", "label": "棕榈", "labelKey": "category.agri.oil" }
     ]
   },
   {
     "key": "energy",
     "label": "能源化工",
+    "labelKey": "category.energy.title",
     "children": [
-      { "key": "energy-crude", "label": "原油" },
-      { "key": "energy-fuel", "label": "燃油" },
-      { "key": "energy-bitumen", "label": "沥青" }
+      { "key": "energy-crude", "label": "原油", "labelKey": "category.energy.crude" },
+      { "key": "energy-fuel", "label": "燃油", "labelKey": "category.energy.fuel" },
+      { "key": "energy-bitumen", "label": "沥青", "labelKey": "category.energy.bitumen" }
     ]
   },
   {
     "key": "metal",
     "label": "有色",
+    "labelKey": "category.metal.title",
     "children": [
-      { "key": "metal-cu", "label": "铜/CU" },
-      { "key": "metal-al", "label": "铝/AL" },
-      { "key": "metal-zn", "label": "锌/ZN" },
-      { "key": "metal-ni", "label": "镍/NI" }
+      { "key": "metal-cu", "label": "铜/CU", "labelKey": "category.metal.cu" },
+      { "key": "metal-al", "label": "铝/AL", "labelKey": "category.metal.al" },
+      { "key": "metal-zn", "label": "锌/ZN", "labelKey": "category.metal.zn" },
+      { "key": "metal-ni", "label": "镍/NI", "labelKey": "category.metal.ni" }
     ]
   }
 ]

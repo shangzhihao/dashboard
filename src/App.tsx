@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Input, Layout } from 'antd';
+import { useTranslation } from 'react-i18next';
 import './App.css';
 import ChartPanel from './components/ChartPanel';
 import ComingSoonPanel from './components/ComingSoonPanel';
+import LanguageSwitcher from './components/LanguageSwitcher';
 import PillNav from './components/PillNav';
 import SideMenu from './components/SideMenu';
 import TopNav from './components/TopNav';
@@ -19,6 +21,7 @@ const navConfigUrl = `${process.env.PUBLIC_URL || ''}/data/navigation.json`;
 const chartDataUrl = `${process.env.PUBLIC_URL || ''}/data/chart-data.json`;
 
 function App() {
+  const { t } = useTranslation();
   const { sideMenuItems, sideOpenKeys, setSideOpenKeys } = useCategories(categoriesUrl);
   const {
     topNav,
@@ -42,7 +45,13 @@ function App() {
     setActivePillView(resolvePillAction(item));
   };
 
-  const activePillName = pillNav.find((item) => item.key === activePillKey)?.name;
+  const activePillName = useMemo(() => {
+    const activeItem = pillNav.find((item) => item.key === activePillKey);
+    if (!activeItem) {
+      return t('common.feature');
+    }
+    return activeItem.nameKey ? t(activeItem.nameKey) : activeItem.name || t('common.feature');
+  }, [activePillKey, pillNav, t]);
 
   return (
     <Layout className="app-layout">
@@ -50,19 +59,20 @@ function App() {
         <div className="header-left">
           <div className="brand">
             <div className="logo">JN</div>
-            <div className="brand-title">首页</div>
+            <div className="brand-title">{t('brand.title')}</div>
           </div>
           <TopNav items={topNav} activeKey={activeTopKey} onChange={setActiveTopKey} />
         </div>
         <div className="header-right">
-          <Input className="search" placeholder="搜索" />
+          <LanguageSwitcher />
+          <Input className="search" placeholder={t('search.placeholder')} />
           <div className="avatar">JS</div>
         </div>
       </Header>
 
       <Layout className="app-shell">
         <Sider width={220} className="app-sider">
-          <div className="side-header">品类</div>
+          <div className="side-header">{t('side.header')}</div>
           <SideMenu
             items={sideMenuItems}
             openKeys={sideOpenKeys}
@@ -81,7 +91,7 @@ function App() {
               chartTitles={chartTitles}
             />
           ) : (
-            <ComingSoonPanel title={activePillName || '功能'} />
+            <ComingSoonPanel title={activePillName} />
           )}
         </Content>
       </Layout>

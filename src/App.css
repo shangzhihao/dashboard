@@ -128,6 +128,25 @@
   height: 100%;
 }
 
+.lang-switch {
+  width: 110px;
+}
+
+.lang-switch .ant-select-selector {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border: none !important;
+  color: #ffffff;
+}
+
+.lang-switch .ant-select-selection-item {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.lang-switch .ant-select-arrow {
+  color: rgba(255, 255, 255, 0.85);
+}
+
 .search {
   width: 220px;
   background: rgba(255, 255, 255, 0.18);
@@ -343,6 +362,10 @@
 @media (max-width: 768px) {
   .top-menu {
     display: none;
+  }
+
+  .lang-switch {
+    width: 90px;
   }
 
   .search {

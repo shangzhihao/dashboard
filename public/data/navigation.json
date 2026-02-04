@@ -2,100 +2,120 @@
   "topNav": [
     {
       "key": "home",
-      "name": "首页"
+      "name": "首页",
+      "nameKey": "nav.home"
     },
     {
       "key": "futures",
-      "name": "期货"
+      "name": "期货",
+      "nameKey": "nav.futures"
     },
     {
       "key": "spot",
-      "name": "现货"
+      "name": "现货",
+      "nameKey": "nav.spot"
     },
     {
       "key": "futures-account",
-      "name": "期货开户"
+      "name": "期货开户",
+      "nameKey": "nav.futuresAccount"
     }
   ],
   "pillNav": [
     {
       "key": "seasonal-analysis",
       "name": "季节性分析",
+      "nameKey": "pill.seasonalAnalysis",
       "func": "showSeasonChart"
     },
     {
       "key": "positions-leaderboard",
       "name": "持仓龙虎榜",
+      "nameKey": "pill.positionsLeaderboard",
       "func": "comingSoon"
     },
     {
       "key": "seat-tracking",
       "name": "席位追踪",
+      "nameKey": "pill.seatTracking",
       "func": "comingSoon"
     },
     {
       "key": "net-positions",
       "name": "持仓净量",
+      "nameKey": "pill.netPositions",
       "func": "comingSoon"
     },
     {
       "key": "roll-over",
       "name": "移仓换月",
+      "nameKey": "pill.rollOver",
       "func": "comingSoon"
     },
     {
       "key": "long-short-chart",
       "name": "持仓多空图",
+      "nameKey": "pill.longShortChart",
       "func": "comingSoon"
     },
     {
       "key": "warehouse-receipt-analysis",
       "name": "仓单分析",
+      "nameKey": "pill.warehouseReceiptAnalysis",
       "func": "comingSoon"
     },
     {
       "key": "spread-positions",
       "name": "价差持仓",
+      "nameKey": "pill.spreadPositions",
       "func": "comingSoon"
     },
     {
       "key": "term-structure",
       "name": "期限结构",
+      "nameKey": "pill.termStructure",
       "func": "comingSoon"
     },
     {
       "key": "calendar-arbitrage",
       "name": "跨期套利",
+      "nameKey": "pill.calendarArbitrage",
       "func": "comingSoon"
     },
     {
       "key": "inter-commodity-arbitrage",
       "name": "跨品种套利",
+      "nameKey": "pill.interCommodityArbitrage",
       "func": "comingSoon"
     },
     {
       "key": "custom-arbitrage",
       "name": "自定义套利",
+      "nameKey": "pill.customArbitrage",
       "func": "comingSoon"
     },
     {
       "key": "basis-analysis",
       "name": "基差分析",
+      "nameKey": "pill.basisAnalysis",
       "func": "comingSoon"
     },
     {
       "key": "inventory-weekly-report",
       "name": "库存周报",
+      "nameKey": "pill.inventoryWeeklyReport",
       "func": "comingSoon"
     },
     {
       "key": "industry-profit",
       "name": "产业利润",
+      "nameKey": "pill.industryProfit",
       "func": "comingSoon"
     },
     {
       "key": "more-coming",
       "name": "更多待开发",
+      "nameKey": "pill.moreComing",
       "func": "comingSoon"
     }
   ]

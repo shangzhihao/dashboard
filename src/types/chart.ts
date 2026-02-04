@@ -6,6 +6,7 @@ export type ChartDatum = {
 export type ChartSeriesConfig = {
   key: string;
   label?: string;
+  labelKey?: string;
   name?: string;
   type?: 'line' | 'area';
   yAxisId?: 'left' | 'right';
@@ -17,6 +18,7 @@ export type ChartSeriesConfig = {
 
 export type ChartAxisConfig = {
   label?: string;
+  labelKey?: string;
 };
 
 export type ChartAxesConfig = {
@@ -26,12 +28,15 @@ export type ChartAxesConfig = {
 
 export type ChartTitlesConfig = {
   panel?: string;
+  panelKey?: string;
   chart?: string;
+  chartKey?: string;
 };
 
 export type NormalizedChartSeries = {
   key: string;
   label: string;
+  labelKey?: string;
   type: 'line' | 'area';
   yAxisId: 'left' | 'right';
   color: string;

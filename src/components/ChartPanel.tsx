@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Button, Card, Select, Space, Typography } from 'antd';
+import { useTranslation } from 'react-i18next';
 import {
   Area,
   Brush,
@@ -58,23 +59,50 @@ const ChartPanel = ({
   chartAxes,
   chartTitles,
 }: ChartPanelProps) => {
+  const { t } = useTranslation();
+
   const resolvedSeries = useMemo(
     () => normalizeSeriesConfig(chartSeries, chartData),
     [chartSeries, chartData],
   );
-  const leftAxisLabel = chartAxes.left?.label ?? '持仓(手)';
-  const panelTitle = chartTitles.panel ?? '持仓多空图';
-  const chartTitle = chartTitles.chart ?? '沪铝/AL 05 合约持仓多空图';
 
-  const handleChartClick = (
-    event: { activeLabel?: string | number; activePayload?: unknown } | null,
-  ) => {
-    if (!event || !event.activeLabel) {
-      return;
+  const resolveText = (key?: string, fallback?: string, defaultKey?: string) => {
+    if (key) {
+      return t(key);
     }
-    // eslint-disable-next-line no-console
-    console.log('Chart click:', event.activeLabel, event.activePayload);
+    if (fallback) {
+      return fallback;
+    }
+    return defaultKey ? t(defaultKey) : '';
   };
+
+  const leftAxisLabel = resolveText(
+    chartAxes.left?.labelKey,
+    chartAxes.left?.label,
+    'chart.axes.left.label',
+  );
+  const panelTitle = resolveText(
+    chartTitles.panelKey,
+    chartTitles.panel,
+    'chart.titles.panel',
+  );
+  const chartTitle = resolveText(
+    chartTitles.chartKey,
+    chartTitles.chart,
+    'chart.titles.chart',
+  );
+
+  const contractOptions = [
+    { value: 'contract-05', label: t('filters.contract.c05') },
+    { value: 'contract-06', label: t('filters.contract.c06') },
+    { value: 'contract-07', label: t('filters.contract.c07') },
+  ];
+
+  const metricOptions = [
+    { value: 'metric-net', label: t('filters.metric.net') },
+    { value: 'metric-long', label: t('filters.metric.long') },
+    { value: 'metric-short', label: t('filters.metric.short') },
+  ];
 
   return (
     <Card className="panel" styles={{ body: { padding: 18 } }}>
@@ -85,24 +113,16 @@ const ChartPanel = ({
         <Space wrap>
           <Select
             className="filter"
-            defaultValue="05 合约"
-            options={[
-              { value: '05 合约', label: '05 合约' },
-              { value: '06 合约', label: '06 合约' },
-              { value: '07 合约', label: '07 合约' },
-            ]}
+            defaultValue="contract-05"
+            options={contractOptions}
           />
           <Select
             className="filter"
-            defaultValue="净持仓"
-            options={[
-              { value: '净持仓', label: '净持仓' },
-              { value: '多头持仓', label: '多头持仓' },
-              { value: '空头持仓', label: '空头持仓' },
-            ]}
+            defaultValue="metric-net"
+            options={metricOptions}
           />
           <Button type="primary" className="primary-btn">
-            查询
+            {t('actions.query')}
           </Button>
         </Space>
       </div>
@@ -156,14 +176,16 @@ const ChartPanel = ({
               />
               <Tooltip content={<ChartTooltip />} />
               <Legend verticalAlign="top" height={36} iconType="circle" />
-              {resolvedSeries.map((series) =>
-                series.type === 'area' ? (
+              {resolvedSeries.map((series) => {
+                const seriesLabel = series.labelKey ? t(series.labelKey) : series.label;
+
+                return series.type === 'area' ? (
                   <Area
                     key={series.key}
                     yAxisId={series.yAxisId}
                     type="monotone"
                     dataKey={series.key}
-                    name={series.label}
+                    name={seriesLabel}
                     stroke={series.color}
                     strokeWidth={series.strokeWidth}
                     fill={`url(#area-${series.key})`}
@@ -174,22 +196,34 @@ const ChartPanel = ({
                     yAxisId={series.yAxisId}
                     type="monotone"
                     dataKey={series.key}
-                    name={series.label}
+                    name={seriesLabel}
                     stroke={series.color}
                     strokeWidth={series.strokeWidth}
                     dot={false}
                   />
-                ),
-              )}
+                );
+              })}
               <Brush dataKey="date" height={24} stroke="#6d63f3" travellerWidth={10} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
       </Card>
 
-      <div className="panel-footer">Copyright © 2018 - 2026 期货数据中心</div>
+      <div className="panel-footer">
+        {t('footer.copyright', { yearStart: 2018, yearEnd: 2026 })}
+      </div>
     </Card>
   );
+};
+
+const handleChartClick = (
+  event: { activeLabel?: string | number; activePayload?: unknown } | null,
+) => {
+  if (!event || !event.activeLabel) {
+    return;
+  }
+  // eslint-disable-next-line no-console
+  console.log('Chart click:', event.activeLabel, event.activePayload);
 };
 
 export default ChartPanel;

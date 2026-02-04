@@ -1,6 +1,7 @@
 export type NavItem = {
   key: string;
   name: string;
+  nameKey?: string;
   func?: string;
 };
 

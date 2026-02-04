@@ -1,17 +1,21 @@
 {
   "axes": {
     "left": {
-      "label": "持仓(手)"
+      "label": "持仓(手)",
+      "labelKey": "chart.axes.left.label"
     }
   },
   "titles": {
     "panel": "持仓数据图表",
-    "chart": "沪铝/AL 05"
+    "panelKey": "chart.titles.panel",
+    "chart": "沪铝/AL 05",
+    "chartKey": "chart.titles.chart"
   },
   "series": [
     {
       "key": "net",
       "label": "净持仓",
+      "labelKey": "chart.series.net",
       "type": "area",
       "yAxisId": "left",
       "color": "#e06262"
@@ -19,6 +23,7 @@
     {
       "key": "long",
       "label": "多头持仓",
+      "labelKey": "chart.series.long",
       "type": "line",
       "yAxisId": "left",
       "color": "#4aa3b4"
@@ -26,6 +31,7 @@
     {
       "key": "short",
       "label": "空头持仓",
+      "labelKey": "chart.series.short",
       "type": "line",
       "yAxisId": "left",
       "color": "#f0a45d"

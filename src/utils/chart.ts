@@ -1,3 +1,4 @@
+import i18n, { getNumberLocale } from '../i18n';
 import type {
   ChartDatum,
   ChartSeriesConfig,
@@ -17,13 +18,34 @@ export const defaultSeriesPalette = [
 ];
 
 export const fallbackSeries: ChartSeriesConfig[] = [
-  { key: 'net', label: '净持仓', type: 'area', yAxisId: 'left', color: '#e06262' },
-  { key: 'long', label: '多头持仓', type: 'line', yAxisId: 'left', color: '#4aa3b4' },
-  { key: 'short', label: '空头持仓', type: 'line', yAxisId: 'left', color: '#f0a45d' },
+  {
+    key: 'net',
+    label: '净持仓',
+    labelKey: 'chart.series.net',
+    type: 'area',
+    yAxisId: 'left',
+    color: '#e06262',
+  },
+  {
+    key: 'long',
+    label: '多头持仓',
+    labelKey: 'chart.series.long',
+    type: 'line',
+    yAxisId: 'left',
+    color: '#4aa3b4',
+  },
+  {
+    key: 'short',
+    label: '空头持仓',
+    labelKey: 'chart.series.short',
+    type: 'line',
+    yAxisId: 'left',
+    color: '#f0a45d',
+  },
 ];
 
 export const tooltipFormatter = (value: number | string | null | undefined) =>
-  new Intl.NumberFormat('en-US').format(Number(value ?? 0));
+  new Intl.NumberFormat(getNumberLocale(i18n.language)).format(Number(value ?? 0));
 
 export const normalizeSeriesConfig = (
   rawSeries: unknown,
@@ -33,10 +55,11 @@ export const normalizeSeriesConfig = (
     ? (rawSeries.filter(Boolean) as ChartSeriesConfig[])
     : isRecord(rawSeries)
       ? Object.entries(rawSeries).map(([key, value]) => ({
-        key,
-        ...(isRecord(value) ? (value as ChartSeriesConfig) : {}),
-      }))
+          key,
+          ...(isRecord(value) ? (value as ChartSeriesConfig) : {}),
+        }))
       : [];
+
   let series = fromConfig.filter((item) => item && item.key);
 
   if (series.length === 0) {
@@ -68,6 +91,7 @@ export const normalizeSeriesConfig = (
     return {
       key: item.key,
       label: item.label || item.name || item.key,
+      labelKey: item.labelKey,
       type,
       yAxisId: item.yAxisId === 'right' ? 'right' : 'left',
       color,

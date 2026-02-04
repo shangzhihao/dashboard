@@ -1,10 +1,71 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { MenuProps } from 'antd';
+import { useTranslation } from 'react-i18next';
+import { isRecord } from '../utils/guards';
+
+type CategoryItem = {
+  key: string;
+  label?: string;
+  labelKey?: string;
+  children?: CategoryItem[];
+};
 
 type MenuItem = NonNullable<MenuProps['items']>[number];
 
+const normalizeCategoryItems = (value: unknown): CategoryItem[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((entry) => {
+    if (!isRecord(entry)) {
+      return [];
+    }
+
+    const rawKey = entry.key;
+    if (typeof rawKey !== 'string' && typeof rawKey !== 'number') {
+      return [];
+    }
+    const key = String(rawKey);
+
+    const label = typeof entry.label === 'string' ? entry.label : undefined;
+    const labelKey = typeof entry.labelKey === 'string' ? entry.labelKey : undefined;
+    const children = normalizeCategoryItems(entry.children);
+
+    return [
+      {
+        key,
+        label,
+        labelKey,
+        children: children.length > 0 ? children : undefined,
+      },
+    ];
+  });
+};
+
+const buildMenuItems = (
+  items: CategoryItem[],
+  translate: (key: string) => string,
+): MenuItem[] =>
+  items.map((item) => {
+    const label = item.labelKey ? translate(item.labelKey) : item.label ?? item.key;
+    if (item.children && item.children.length > 0) {
+      return {
+        key: item.key,
+        label,
+        children: buildMenuItems(item.children, translate),
+      };
+    }
+
+    return {
+      key: item.key,
+      label,
+    };
+  });
+
 export const useCategories = (categoriesUrl: string) => {
-  const [sideMenuItems, setSideMenuItems] = useState<NonNullable<MenuProps['items']>>([]);
+  const { t } = useTranslation();
+  const [rawItems, setRawItems] = useState<CategoryItem[]>([]);
   const [sideOpenKeys, setSideOpenKeys] = useState<string[]>([]);
 
   useEffect(() => {
@@ -23,19 +84,16 @@ export const useCategories = (categoriesUrl: string) => {
             ? (payload as { items: unknown[] }).items
             : [];
         if (isMounted) {
-          const nextItems = Array.isArray(items) ? items : [];
-          const nextOpenKeys = nextItems
-            .map((item) => (item as MenuItem)?.key)
-            .filter((key): key is string | number => key !== undefined && key !== null)
-            .map((key) => String(key));
-          setSideMenuItems(nextItems as NonNullable<MenuProps['items']>);
+          const nextItems = normalizeCategoryItems(items);
+          const nextOpenKeys = nextItems.map((item) => item.key);
+          setRawItems(nextItems);
           setSideOpenKeys(nextOpenKeys);
         }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.warn(error);
         if (isMounted) {
-          setSideMenuItems([]);
+          setRawItems([]);
           setSideOpenKeys([]);
         }
       }
@@ -47,6 +105,11 @@ export const useCategories = (categoriesUrl: string) => {
       isMounted = false;
     };
   }, [categoriesUrl]);
+
+  const sideMenuItems: NonNullable<MenuProps['items']> = useMemo(
+    () => buildMenuItems(rawItems, t),
+    [rawItems, t],
+  );
 
   return { sideMenuItems, sideOpenKeys, setSideOpenKeys };
 };
