@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import 'antd/dist/reset.css';
 import './index.css';
 import App from './App';
+import { siteConfig } from './config/site';
 import './i18n';
 import { normalizeLanguage } from './i18n';
 import reportWebVitals from './reportWebVitals';
@@ -24,7 +25,8 @@ const localeMap = {
 const Root = () => {
   const { i18n } = useTranslation();
   const language = normalizeLanguage(i18n.resolvedLanguage || i18n.language);
-  const locale = localeMap[language] || enUS;
+  const fallbackLocale = localeMap[siteConfig.language.default] || enUS;
+  const locale = localeMap[language] || fallbackLocale;
 
   return (
     <ConfigProvider locale={locale}>

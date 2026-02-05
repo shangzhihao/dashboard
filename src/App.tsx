@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import './App.css';
 import ChartPanel from './components/ChartPanel';
 import ComingSoonPanel from './components/ComingSoonPanel';
-import LanguageSwitcher from './components/LanguageSwitcher';
 import PillNav from './components/PillNav';
 import SideMenu from './components/SideMenu';
 import TopNav from './components/TopNav';
+import { siteConfig } from './config/site';
 import { useCategories } from './hooks/useCategories';
 import { useChartData } from './hooks/useChartData';
 import { useNavigation } from './hooks/useNavigation';
@@ -16,13 +16,11 @@ import { resolvePillAction } from './utils/nav';
 
 const { Header, Sider, Content } = Layout;
 
-const categoriesUrl = `${process.env.PUBLIC_URL || ''}/data/categories.json`;
-const navConfigUrl = `${process.env.PUBLIC_URL || ''}/data/navigation.json`;
-const chartDataUrl = `${process.env.PUBLIC_URL || ''}/data/chart-data.json`;
+const { dataUrls, layout, brand, user } = siteConfig;
 
 function App() {
   const { t } = useTranslation();
-  const { sideMenuItems, sideOpenKeys, setSideOpenKeys } = useCategories(categoriesUrl);
+  const { sideMenuItems, sideOpenKeys, setSideOpenKeys } = useCategories(dataUrls.categories);
   const {
     topNav,
     pillNav,
@@ -30,8 +28,8 @@ function App() {
     setActiveTopKey,
     activePillKey,
     setActivePillKey,
-  } = useNavigation(navConfigUrl);
-  const { chartData, chartSeries, chartAxes, chartTitles } = useChartData(chartDataUrl);
+  } = useNavigation(dataUrls.navigation);
+  const { chartData, chartSeries, chartAxes, chartTitles } = useChartData(dataUrls.chartData);
 
   const [activePillView, setActivePillView] = useState<PillFunc>('comingSoon');
 
@@ -58,20 +56,19 @@ function App() {
       <Header className="app-header">
         <div className="header-left">
           <div className="brand">
-            <div className="logo">JN</div>
+            <div className="logo">{brand.logoText}</div>
             <div className="brand-title">{t('brand.title')}</div>
           </div>
           <TopNav items={topNav} activeKey={activeTopKey} onChange={setActiveTopKey} />
         </div>
         <div className="header-right">
-          <LanguageSwitcher />
           <Input className="search" placeholder={t('search.placeholder')} />
-          <div className="avatar">JS</div>
+          <div className="avatar">{user.avatarText}</div>
         </div>
       </Header>
 
       <Layout className="app-shell">
-        <Sider width={220} className="app-sider">
+        <Sider width={layout.siderWidth} className="app-sider">
           <div className="side-header">{t('side.header')}</div>
           <SideMenu
             items={sideMenuItems}

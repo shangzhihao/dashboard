@@ -1,22 +1,30 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { siteConfig, type SupportedLanguage } from './config/site';
 import en from './locales/en';
 import zh from './locales/zh';
 
-export const LANGUAGE_STORAGE_KEY = 'dashboard.language';
+export const normalizeLanguage = (language?: string): SupportedLanguage => {
+  if (!language) {
+    return siteConfig.language.default;
+  }
 
-export const normalizeLanguage = (language?: string) =>
-  language && language.toLowerCase().startsWith('zh') ? 'zh' : 'en';
+  const lower = language.toLowerCase();
+  const match = siteConfig.language.supported.find(
+    (code) => lower === code || lower.startsWith(`${code}-`),
+  );
+  return match ?? siteConfig.language.default;
+};
 
 export const getNumberLocale = (language?: string) =>
   normalizeLanguage(language) === 'zh' ? 'zh-CN' : 'en-US';
 
 const getInitialLanguage = () => {
   if (typeof window === 'undefined') {
-    return 'zh';
+    return siteConfig.language.default;
   }
 
-  const stored = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  const stored = window.localStorage.getItem(siteConfig.language.storageKey);
   if (stored) {
     return normalizeLanguage(stored);
   }
@@ -28,7 +36,7 @@ const getInitialLanguage = () => {
 i18n.use(initReactI18next).init({
   resources: { en, zh },
   lng: getInitialLanguage(),
-  fallbackLng: 'zh',
+  fallbackLng: siteConfig.language.fallback,
   interpolation: {
     escapeValue: false,
   },
@@ -38,7 +46,7 @@ i18n.on('languageChanged', (language) => {
   if (typeof window === 'undefined') {
     return;
   }
-  window.localStorage.setItem(LANGUAGE_STORAGE_KEY, normalizeLanguage(language));
+  window.localStorage.setItem(siteConfig.language.storageKey, normalizeLanguage(language));
 });
 
 export default i18n;
