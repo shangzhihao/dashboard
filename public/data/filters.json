@@ -1,0 +1,57 @@
+{
+  "defaultMetric": "price",
+  "metrics": [
+    {
+      "key": "price",
+      "labelKey": "filters.metric.price",
+      "contractKeys": [
+        "c01",
+        "c02",
+        "c03",
+        "c04",
+        "c05",
+        "c06",
+        "c07",
+        "c08",
+        "c09",
+        "c10",
+        "c11",
+        "c12"
+      ]
+    },
+    {
+      "key": "positions",
+      "labelKey": "filters.metric.positions",
+      "contractKeys": [
+        "c01",
+        "c02",
+        "c03",
+        "c04",
+        "c05",
+        "c06",
+        "c07",
+        "c08",
+        "c09",
+        "c10",
+        "c11",
+        "c12",
+        "index"
+      ]
+    }
+  ],
+  "contracts": [
+    { "key": "c01", "labelKey": "filters.contract.c01" },
+    { "key": "c02", "labelKey": "filters.contract.c02" },
+    { "key": "c03", "labelKey": "filters.contract.c03" },
+    { "key": "c04", "labelKey": "filters.contract.c04" },
+    { "key": "c05", "labelKey": "filters.contract.c05" },
+    { "key": "c06", "labelKey": "filters.contract.c06" },
+    { "key": "c07", "labelKey": "filters.contract.c07" },
+    { "key": "c08", "labelKey": "filters.contract.c08" },
+    { "key": "c09", "labelKey": "filters.contract.c09" },
+    { "key": "c10", "labelKey": "filters.contract.c10" },
+    { "key": "c11", "labelKey": "filters.contract.c11" },
+    { "key": "c12", "labelKey": "filters.contract.c12" },
+    { "key": "index", "labelKey": "filters.contract.index" }
+  ]
+}

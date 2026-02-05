@@ -18,6 +18,15 @@ export const useChartData = (chartDataUrl: string) => {
 
     const loadChartData = async () => {
       try {
+        if (!chartDataUrl) {
+          if (isMounted) {
+            setChartData([]);
+            setChartSeries([]);
+            setChartAxes({});
+            setChartTitles({});
+          }
+          return;
+        }
         const response = await fetch(chartDataUrl, { cache: 'no-store' });
         if (!response.ok) {
           throw new Error(`Failed to load chart data: ${response.status}`);

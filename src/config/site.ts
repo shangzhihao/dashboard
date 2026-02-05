@@ -10,7 +10,9 @@ export const siteConfig = {
   dataUrls: {
     categories: `${publicUrl}/data/categories.json`,
     navigation: `${publicUrl}/data/navigation.json`,
-    chartData: `${publicUrl}/data/chart-data.json`,
+    filters: `${publicUrl}/data/filters.json`,
+    chartDataPositions: `${publicUrl}/data/mock/positions`,
+    chartDataPrice: `${publicUrl}/data/mock/price`,
   },
   layout: {
     siderWidth: 220,

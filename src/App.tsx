@@ -10,6 +10,7 @@ import TopNav from './components/TopNav';
 import { siteConfig } from './config/site';
 import { useCategories } from './hooks/useCategories';
 import { useChartData } from './hooks/useChartData';
+import { useFilters } from './hooks/useFilters';
 import { useNavigation } from './hooks/useNavigation';
 import type { NavItem, PillFunc } from './types/nav';
 import { resolvePillAction } from './utils/nav';
@@ -18,9 +19,29 @@ const { Header, Sider, Content } = Layout;
 
 const { dataUrls, layout, brand, user } = siteConfig;
 
+const getCurrentContractKey = () => {
+  const month = String(new Date().getMonth() + 1).padStart(2, '0');
+  return `c${month}`;
+};
+
 function App() {
   const { t } = useTranslation();
-  const { sideMenuItems, sideOpenKeys, setSideOpenKeys } = useCategories(dataUrls.categories);
+  const {
+    sideMenuItems,
+    sideOpenKeys,
+    setSideOpenKeys,
+    activeCategoryKey,
+    setActiveCategoryKey,
+    categoryLabelMap,
+  } = useCategories(dataUrls.categories);
+  const {
+    metricOptions,
+    contractOptions,
+    metricContractMap,
+    contractLabelMap,
+    metricLabelMap,
+    defaultMetricKey,
+  } = useFilters(dataUrls.filters);
   const {
     topNav,
     pillNav,
@@ -29,9 +50,10 @@ function App() {
     activePillKey,
     setActivePillKey,
   } = useNavigation(dataUrls.navigation);
-  const { chartData, chartSeries, chartAxes, chartTitles } = useChartData(dataUrls.chartData);
 
   const [activePillView, setActivePillView] = useState<PillFunc>('comingSoon');
+  const [metricType, setMetricType] = useState('');
+  const [contractValue, setContractValue] = useState('');
 
   const isFuturesView = activeTopKey === 'futures' || activeTopKey === '';
 
@@ -61,6 +83,111 @@ function App() {
     return activeItem.nameKey ? t(activeItem.nameKey) : activeItem.name || t('common.feature');
   }, [activeTopKey, topNav, t]);
 
+  useEffect(() => {
+    if (metricType || metricOptions.length === 0) {
+      return;
+    }
+    const nextMetric = defaultMetricKey || metricOptions[0]?.value || '';
+    if (nextMetric) {
+      setMetricType(nextMetric);
+    }
+  }, [defaultMetricKey, metricOptions, metricType]);
+
+  const activeContractKeys = useMemo(() => {
+    if (!metricType) {
+      return [];
+    }
+    const allowed = metricContractMap[metricType];
+    if (allowed && allowed.length > 0) {
+      return allowed;
+    }
+    return contractOptions.map((option) => option.value);
+  }, [contractOptions, metricContractMap, metricType]);
+
+  const activeContractOptions = useMemo(() => {
+    if (activeContractKeys.length === 0) {
+      return [];
+    }
+    const allowed = new Set(activeContractKeys);
+    return contractOptions.filter((option) => allowed.has(option.value));
+  }, [activeContractKeys, contractOptions]);
+
+  useEffect(() => {
+    if (!metricType || activeContractKeys.length === 0) {
+      return;
+    }
+    const currentMonth = getCurrentContractKey();
+    const fallback = activeContractKeys[0];
+    const nextDefault = activeContractKeys.includes(currentMonth) ? currentMonth : fallback;
+    if (!contractValue || !activeContractKeys.includes(contractValue)) {
+      setContractValue(nextDefault);
+    }
+  }, [activeContractKeys, contractValue, metricType]);
+
+  const chartDataUrl = useMemo(() => {
+    if (activePillView !== 'showSeasonChart') {
+      return '';
+    }
+    if (!activeCategoryKey || !metricType || !contractValue) {
+      return '';
+    }
+    const baseUrl =
+      metricType === 'price'
+        ? dataUrls.chartDataPrice
+        : dataUrls.chartDataPositions;
+    return `${baseUrl}/${activeCategoryKey}/${contractValue}.json`;
+  }, [
+    activeCategoryKey,
+    activePillView,
+    contractValue,
+    dataUrls.chartDataPositions,
+    dataUrls.chartDataPrice,
+    metricType,
+  ]);
+
+  const { chartData, chartSeries, chartAxes, chartTitles } = useChartData(chartDataUrl);
+
+  const activeCategoryLabel = categoryLabelMap[activeCategoryKey] || t('common.feature');
+  const activeContractLabel = contractLabelMap[contractValue] || contractValue;
+  const activeMetricLabel = metricLabelMap[metricType] || metricType;
+
+  const displayChartTitle = useMemo(
+    () =>
+      [activeCategoryLabel, activeContractLabel, activeMetricLabel]
+        .filter(Boolean)
+        .join(' '),
+    [activeCategoryLabel, activeContractLabel, activeMetricLabel],
+  );
+
+  const displayAxisLabel = useMemo(
+    () =>
+      metricType === 'price'
+        ? t('chart.axes.left.price')
+        : t('chart.axes.left.positions'),
+    [metricType, t],
+  );
+
+  const displayChartTitles = useMemo(
+    () => ({
+      ...chartTitles,
+      chart: displayChartTitle,
+      chartKey: undefined,
+    }),
+    [chartTitles, displayChartTitle],
+  );
+
+  const displayChartAxes = useMemo(
+    () => ({
+      ...chartAxes,
+      left: {
+        ...(chartAxes.left ?? {}),
+        label: displayAxisLabel,
+        labelKey: undefined,
+      },
+    }),
+    [chartAxes, displayAxisLabel],
+  );
+
   return (
     <Layout className="app-layout">
       <Header className="app-header">
@@ -86,6 +213,8 @@ function App() {
                 items={sideMenuItems}
                 openKeys={sideOpenKeys}
                 onOpenChange={setSideOpenKeys}
+                selectedKey={activeCategoryKey}
+                onSelectKey={setActiveCategoryKey}
               />
             </Sider>
 
@@ -96,8 +225,14 @@ function App() {
                 <ChartPanel
                   chartData={chartData}
                   chartSeries={chartSeries}
-                  chartAxes={chartAxes}
-                  chartTitles={chartTitles}
+                  chartAxes={displayChartAxes}
+                  chartTitles={displayChartTitles}
+                  contractOptions={activeContractOptions}
+                  contractValue={contractValue}
+                  metricOptions={metricOptions}
+                  metricValue={metricType}
+                  onContractChange={setContractValue}
+                  onMetricChange={(value) => setMetricType(value)}
                 />
               ) : (
                 <ComingSoonPanel title={activePillName} />

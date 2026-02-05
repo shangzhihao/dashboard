@@ -68,28 +68,37 @@ const zh = {
       axes: {
         left: {
           label: '持仓(手)',
+          price: '价格',
+          positions: '持仓(手)',
         },
       },
       series: {
         net: '净持仓',
         long: '多头持仓',
         short: '空头持仓',
+        price: '价格',
       },
     },
     filters: {
       contract: {
-        c05: '05 合约',
-        c06: '06 合约',
-        c07: '07 合约',
+        c01: '01合约',
+        c02: '02合约',
+        c03: '03合约',
+        c04: '04合约',
+        c05: '05合约',
+        c06: '06合约',
+        c07: '07合约',
+        c08: '08合约',
+        c09: '09合约',
+        c10: '10合约',
+        c11: '11合约',
+        c12: '12合约',
+        index: '指数',
       },
       metric: {
-        net: '净持仓',
-        long: '多头持仓',
-        short: '空头持仓',
+        price: '价格',
+        positions: '持仓',
       },
-    },
-    actions: {
-      query: '查询',
     },
     common: {
       comingSoon: '敬请期待',
@@ -97,10 +106,6 @@ const zh = {
     },
     footer: {
       copyright: 'Copyright © {{yearStart}} - {{yearEnd}} 期货数据中心',
-    },
-    language: {
-      zh: '中文',
-      en: 'English',
     },
   },
 };

@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Button, Card, Select, Space, Typography } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import { Card, Select, Space, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
   Area,
@@ -13,6 +13,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import type { DefaultLegendContentProps } from 'recharts';
 import type {
   ChartAxesConfig,
   ChartDatum,
@@ -29,6 +30,12 @@ type ChartPanelProps = {
   chartSeries: ChartSeriesConfig[];
   chartAxes: ChartAxesConfig;
   chartTitles: ChartTitlesConfig;
+  contractOptions: Array<{ value: string; label: string }>;
+  contractValue: string;
+  metricOptions: Array<{ value: string; label: string }>;
+  metricValue: string;
+  onContractChange: (value: string) => void;
+  onMetricChange: (value: string) => void;
 };
 
 const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
@@ -58,13 +65,28 @@ const ChartPanel = ({
   chartSeries,
   chartAxes,
   chartTitles,
+  contractOptions,
+  contractValue,
+  metricOptions,
+  metricValue,
+  onContractChange,
+  onMetricChange,
 }: ChartPanelProps) => {
   const { t } = useTranslation();
+  const [hiddenSeriesKeys, setHiddenSeriesKeys] = useState<Set<string>>(new Set());
 
   const resolvedSeries = useMemo(
     () => normalizeSeriesConfig(chartSeries, chartData),
     [chartSeries, chartData],
   );
+
+  useEffect(() => {
+    const nextHidden = new Set<string>();
+    resolvedSeries.slice(5).forEach((series) => {
+      nextHidden.add(series.key);
+    });
+    setHiddenSeriesKeys(nextHidden);
+  }, [resolvedSeries]);
 
   const resolveText = (key?: string, fallback?: string, defaultKey?: string) => {
     if (key) {
@@ -81,54 +103,78 @@ const ChartPanel = ({
     chartAxes.left?.label,
     'chart.axes.left.label',
   );
-  const panelTitle = resolveText(
-    chartTitles.panelKey,
-    chartTitles.panel,
-    'chart.titles.panel',
-  );
   const chartTitle = resolveText(
     chartTitles.chartKey,
     chartTitles.chart,
     'chart.titles.chart',
   );
 
-  const contractOptions = [
-    { value: 'contract-05', label: t('filters.contract.c05') },
-    { value: 'contract-06', label: t('filters.contract.c06') },
-    { value: 'contract-07', label: t('filters.contract.c07') },
-  ];
+  const visibleSeries = useMemo(
+    () => resolvedSeries.filter((series) => !hiddenSeriesKeys.has(series.key)),
+    [hiddenSeriesKeys, resolvedSeries],
+  );
 
-  const metricOptions = [
-    { value: 'metric-net', label: t('filters.metric.net') },
-    { value: 'metric-long', label: t('filters.metric.long') },
-    { value: 'metric-short', label: t('filters.metric.short') },
-  ];
+  const handleLegendToggle = (dataKey: string) => {
+    setHiddenSeriesKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(dataKey)) {
+        next.delete(dataKey);
+      } else {
+        next.add(dataKey);
+      }
+      return next;
+    });
+  };
+
+  const renderLegend = (_props: DefaultLegendContentProps) => {
+    return (
+      <div className="chart-legend">
+        {resolvedSeries.map((series) => {
+          const label = series.labelKey ? t(series.labelKey) : series.label;
+          const isHidden = hiddenSeriesKeys.has(series.key);
+          const color = isHidden ? '#c2c6d6' : series.color || '#6d63f3';
+          return (
+            <button
+              key={series.key}
+              type="button"
+              className="chart-legend-item"
+              onClick={() => {
+                handleLegendToggle(series.key);
+              }}
+              style={{ color }}
+            >
+              <span className="chart-legend-dot" style={{ background: color }} />
+              {label}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <Card className="panel" styles={{ body: { padding: 18 } }}>
       <div className="panel-header">
         <Title level={5} className="panel-title">
-          {panelTitle}
+          {chartTitle}
         </Title>
         <Space wrap>
           <Select
             className="filter"
-            defaultValue="contract-05"
+            value={contractValue}
+            onChange={onContractChange}
             options={contractOptions}
           />
           <Select
             className="filter"
-            defaultValue="metric-net"
+            value={metricValue}
+            onChange={onMetricChange}
             options={metricOptions}
           />
-          <Button type="primary" className="primary-btn">
-            {t('actions.query')}
-          </Button>
         </Space>
       </div>
 
       <Card className="chart-card" styles={{ body: { padding: 16 } }}>
-        <div className="chart-title">{chartTitle}</div>
         <div className="chart-wrap" style={{ minHeight: 320 }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
@@ -137,7 +183,7 @@ const ChartPanel = ({
               onClick={handleChartClick}
             >
               <defs>
-                {resolvedSeries
+                {visibleSeries
                   .filter((series) => series.type === 'area')
                   .map((series) => (
                     <linearGradient
@@ -175,8 +221,13 @@ const ChartPanel = ({
                 }}
               />
               <Tooltip content={<ChartTooltip />} />
-              <Legend verticalAlign="top" height={36} iconType="circle" />
-              {resolvedSeries.map((series) => {
+              <Legend
+                verticalAlign="top"
+                height={36}
+                iconType="circle"
+                content={renderLegend}
+              />
+              {visibleSeries.map((series) => {
                 const seriesLabel = series.labelKey ? t(series.labelKey) : series.label;
 
                 return series.type === 'area' ? (

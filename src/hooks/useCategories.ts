@@ -63,10 +63,42 @@ const buildMenuItems = (
     };
   });
 
+const buildLabelMap = (
+  items: CategoryItem[],
+  translate: (key: string) => string,
+  map: Record<string, string> = {},
+): Record<string, string> => {
+  items.forEach((item) => {
+    const label = item.labelKey ? translate(item.labelKey) : item.label ?? item.key;
+    map[item.key] = label;
+    if (item.children && item.children.length > 0) {
+      buildLabelMap(item.children, translate, map);
+    }
+  });
+
+  return map;
+};
+
+const findFirstLeafKey = (items: CategoryItem[]): string => {
+  for (const item of items) {
+    if (item.children && item.children.length > 0) {
+      const childKey = findFirstLeafKey(item.children);
+      if (childKey) {
+        return childKey;
+      }
+    } else {
+      return item.key;
+    }
+  }
+
+  return '';
+};
+
 export const useCategories = (categoriesUrl: string) => {
   const { t } = useTranslation();
   const [rawItems, setRawItems] = useState<CategoryItem[]>([]);
   const [sideOpenKeys, setSideOpenKeys] = useState<string[]>([]);
+  const [activeCategoryKey, setActiveCategoryKey] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -88,6 +120,7 @@ export const useCategories = (categoriesUrl: string) => {
           const nextOpenKeys = nextItems.map((item) => item.key);
           setRawItems(nextItems);
           setSideOpenKeys(nextOpenKeys);
+          setActiveCategoryKey((prev) => prev || findFirstLeafKey(nextItems));
         }
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -95,6 +128,7 @@ export const useCategories = (categoriesUrl: string) => {
         if (isMounted) {
           setRawItems([]);
           setSideOpenKeys([]);
+          setActiveCategoryKey('');
         }
       }
     };
@@ -111,5 +145,14 @@ export const useCategories = (categoriesUrl: string) => {
     [rawItems, t],
   );
 
-  return { sideMenuItems, sideOpenKeys, setSideOpenKeys };
+  const categoryLabelMap = useMemo(() => buildLabelMap(rawItems, t), [rawItems, t]);
+
+  return {
+    sideMenuItems,
+    sideOpenKeys,
+    setSideOpenKeys,
+    activeCategoryKey,
+    setActiveCategoryKey,
+    categoryLabelMap,
+  };
 };
