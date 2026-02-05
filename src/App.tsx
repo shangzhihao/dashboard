@@ -33,6 +33,8 @@ function App() {
 
   const [activePillView, setActivePillView] = useState<PillFunc>('comingSoon');
 
+  const isFuturesView = activeTopKey === 'futures' || activeTopKey === '';
+
   useEffect(() => {
     const activeItem = pillNav.find((item) => item.key === activePillKey);
     setActivePillView(resolvePillAction(activeItem));
@@ -51,6 +53,14 @@ function App() {
     return activeItem.nameKey ? t(activeItem.nameKey) : activeItem.name || t('common.feature');
   }, [activePillKey, pillNav, t]);
 
+  const activeTopName = useMemo(() => {
+    const activeItem = topNav.find((item) => item.key === activeTopKey);
+    if (!activeItem) {
+      return t('common.feature');
+    }
+    return activeItem.nameKey ? t(activeItem.nameKey) : activeItem.name || t('common.feature');
+  }, [activeTopKey, topNav, t]);
+
   return (
     <Layout className="app-layout">
       <Header className="app-header">
@@ -68,29 +78,37 @@ function App() {
       </Header>
 
       <Layout className="app-shell">
-        <Sider width={layout.siderWidth} className="app-sider">
-          <div className="side-header">{t('side.header')}</div>
-          <SideMenu
-            items={sideMenuItems}
-            openKeys={sideOpenKeys}
-            onOpenChange={setSideOpenKeys}
-          />
-        </Sider>
+        {isFuturesView ? (
+          <>
+            <Sider width={layout.siderWidth} className="app-sider">
+              <div className="side-header">{t('side.header')}</div>
+              <SideMenu
+                items={sideMenuItems}
+                openKeys={sideOpenKeys}
+                onOpenChange={setSideOpenKeys}
+              />
+            </Sider>
 
-        <Content className="app-content">
-          <PillNav items={pillNav} activeKey={activePillKey} onClick={handlePillClick} />
+            <Content className="app-content">
+              <PillNav items={pillNav} activeKey={activePillKey} onClick={handlePillClick} />
 
-          {activePillView === 'showSeasonChart' ? (
-            <ChartPanel
-              chartData={chartData}
-              chartSeries={chartSeries}
-              chartAxes={chartAxes}
-              chartTitles={chartTitles}
-            />
-          ) : (
-            <ComingSoonPanel title={activePillName} />
-          )}
-        </Content>
+              {activePillView === 'showSeasonChart' ? (
+                <ChartPanel
+                  chartData={chartData}
+                  chartSeries={chartSeries}
+                  chartAxes={chartAxes}
+                  chartTitles={chartTitles}
+                />
+              ) : (
+                <ComingSoonPanel title={activePillName} />
+              )}
+            </Content>
+          </>
+        ) : (
+          <Content className="app-content">
+            <ComingSoonPanel title={activeTopName} />
+          </Content>
+        )}
       </Layout>
     </Layout>
   );

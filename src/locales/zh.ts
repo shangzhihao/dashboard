@@ -9,11 +9,10 @@ const zh = {
     side: {
       header: '品类',
     },
-    nav: {
-      home: '首页',
-      futures: '期货',
-      spot: '现货',
-      futuresAccount: '期货开户',
+  nav: {
+    futures: '期货',
+    spot: '现货',
+    futuresAccount: '期货开户',
     },
     pill: {
       seasonalAnalysis: '季节性分析',

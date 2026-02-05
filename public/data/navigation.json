@@ -1,11 +1,6 @@
 {
   "topNav": [
     {
-      "key": "home",
-      "name": "首页",
-      "nameKey": "nav.home"
-    },
-    {
       "key": "futures",
       "name": "期货",
       "nameKey": "nav.futures"

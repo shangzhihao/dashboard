@@ -9,11 +9,10 @@ const en = {
     side: {
       header: 'Categories',
     },
-    nav: {
-      home: 'Home',
-      futures: 'Futures',
-      spot: 'Spot',
-      futuresAccount: 'Futures Account',
+  nav: {
+    futures: 'Futures',
+    spot: 'Spot',
+    futuresAccount: 'Futures Account',
     },
     pill: {
       seasonalAnalysis: 'Seasonal Analysis',
