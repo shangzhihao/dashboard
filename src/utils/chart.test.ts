@@ -14,6 +14,11 @@ describe('normalizeSeriesConfig', () => {
     expect(series.map((item) => item.key)).toEqual(['open', 'close']);
   });
 
+  it('uses fallback series when data is missing', () => {
+    const series = normalizeSeriesConfig([], []);
+    expect(series.map((item) => item.key)).toEqual(['net', 'long', 'short']);
+  });
+
   it('appends extra data keys not in the config', () => {
     const series = normalizeSeriesConfig(
       [{ key: 'net', type: 'line', yAxisId: 'left' }],
