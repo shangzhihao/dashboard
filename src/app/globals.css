@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+
 :root {
   --bg: #f3f4f8;
   --panel: #ffffff;
@@ -8,6 +10,30 @@
   --accent: #2fb6d4;
   --shadow: 0 14px 30px rgba(31, 36, 48, 0.08);
   --border: #e7eaf2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Source Sans 3', 'Space Grotesk', sans-serif;
+  background: #f3f4f8;
+  color: #1f2430;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+code {
+  font-family: 'Space Grotesk', ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
 }
 
 .app-layout {

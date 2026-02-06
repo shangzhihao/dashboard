@@ -19,7 +19,7 @@ export const normalizeLanguage = (language?: string): SupportedLanguage => {
 export const getNumberLocale = (language?: string) =>
   normalizeLanguage(language) === 'zh' ? 'zh-CN' : 'en-US';
 
-const getInitialLanguage = () => {
+export const getClientLanguage = (): SupportedLanguage => {
   if (typeof window === 'undefined') {
     return siteConfig.language.default;
   }
@@ -35,7 +35,7 @@ const getInitialLanguage = () => {
 
 i18n.use(initReactI18next).init({
   resources: { en, zh },
-  lng: getInitialLanguage(),
+  lng: siteConfig.language.default,
   fallbackLng: siteConfig.language.fallback,
   interpolation: {
     escapeValue: false,

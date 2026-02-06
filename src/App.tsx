@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Input, Layout } from 'antd';
 import { useTranslation } from 'react-i18next';
-import './App.css';
 import ChartPanel from './components/ChartPanel';
 import ComingSoonPanel from './components/ComingSoonPanel';
 import PillNav from './components/PillNav';
@@ -54,8 +53,13 @@ function App() {
   const [activePillView, setActivePillView] = useState<PillFunc>('comingSoon');
   const [metricType, setMetricType] = useState('');
   const [contractValue, setContractValue] = useState('');
+  const [currentContractKey, setCurrentContractKey] = useState('');
 
   const isFuturesView = activeTopKey === 'futures' || activeTopKey === '';
+
+  useEffect(() => {
+    setCurrentContractKey(getCurrentContractKey());
+  }, []);
 
   useEffect(() => {
     const activeItem = pillNav.find((item) => item.key === activePillKey);
@@ -116,13 +120,14 @@ function App() {
     if (!metricType || activeContractKeys.length === 0) {
       return;
     }
-    const currentMonth = getCurrentContractKey();
+    const currentMonth = currentContractKey;
     const fallback = activeContractKeys[0];
-    const nextDefault = activeContractKeys.includes(currentMonth) ? currentMonth : fallback;
+    const nextDefault =
+      currentMonth && activeContractKeys.includes(currentMonth) ? currentMonth : fallback;
     if (!contractValue || !activeContractKeys.includes(contractValue)) {
       setContractValue(nextDefault);
     }
-  }, [activeContractKeys, contractValue, metricType]);
+  }, [activeContractKeys, contractValue, currentContractKey, metricType]);
 
   const chartDataUrl = useMemo(() => {
     if (activePillView !== 'showSeasonChart') {
@@ -136,14 +141,7 @@ function App() {
         ? dataUrls.chartDataPrice
         : dataUrls.chartDataPositions;
     return `${baseUrl}/${activeCategoryKey}/${contractValue}.json`;
-  }, [
-    activeCategoryKey,
-    activePillView,
-    contractValue,
-    dataUrls.chartDataPositions,
-    dataUrls.chartDataPrice,
-    metricType,
-  ]);
+  }, [activeCategoryKey, activePillView, contractValue, metricType]);
 
   const { chartData, chartSeries, chartAxes, chartTitles } = useChartData(chartDataUrl);
 

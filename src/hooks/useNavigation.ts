@@ -38,7 +38,6 @@ export const useNavigation = (navConfigUrl: string) => {
           setActivePillKey(nextPill);
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.warn(error);
         if (isMounted) {
           setTopNav([]);

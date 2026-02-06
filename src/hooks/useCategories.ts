@@ -123,7 +123,6 @@ export const useCategories = (categoriesUrl: string) => {
           setActiveCategoryKey((prev) => prev || findFirstLeafKey(nextItems));
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.warn(error);
         if (isMounted) {
           setRawItems([]);

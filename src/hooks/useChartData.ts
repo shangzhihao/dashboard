@@ -49,7 +49,6 @@ export const useChartData = (chartDataUrl: string) => {
           setChartTitles(titles as ChartTitlesConfig);
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.warn(error);
         if (isMounted) {
           setChartData([]);

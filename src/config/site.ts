@@ -1,4 +1,4 @@
-const publicUrl = process.env.PUBLIC_URL || '';
+const publicUrl = process.env.NEXT_PUBLIC_BASE_PATH || process.env.PUBLIC_URL || '';
 
 export const siteConfig = {
   language: {

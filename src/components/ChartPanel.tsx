@@ -273,7 +273,6 @@ const handleChartClick = (
   if (!event || !event.activeLabel) {
     return;
   }
-  // eslint-disable-next-line no-console
   console.log('Chart click:', event.activeLabel, event.activePayload);
 };
 

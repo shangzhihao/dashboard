@@ -113,7 +113,6 @@ export const useFilters = (filtersUrl: string) => {
           setDefaultMetricKey(defaultMetric || nextMetrics[0]?.key || '');
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.warn(error);
         if (isMounted) {
           setMetrics([]);
