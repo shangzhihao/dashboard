@@ -1,23 +1,43 @@
-# Futures Dashboard (Next.js)
+# Futures Dashboard Monorepo
 
-## Getting Started
+## Layout
+
+- `web/`: Next.js + TypeScript frontend dashboard
+- `api/`: FastAPI backend service
+
+## Frontend (web)
 
 ```bash
+cd web
 npm run dev
 ```
 
 Open `http://localhost:3000`.
 
-## Scripts
+Other commands:
 
-- `npm run dev` start the dev server
-- `npm run build` build for production
-- `npm run start` run the production server
-- `npm run lint` run lint checks
+- `npm run build`
+- `npm run start`
+- `npm run test`
+- `npm run lint`
 
-## Project Structure
+## Backend (api)
 
-- `src/app` Next.js app router entry
-- `src/components` UI components
-- `src/hooks` data hooks
-- `public/data` mock data and filters
+```bash
+cd api
+uv sync
+uv run uvicorn app.main:app --reload --port 8000
+```
+
+Open API docs at `http://localhost:8000/docs`.
+
+## Launch Both
+
+```bash
+./scripts/launch.sh
+```
+
+This script starts:
+
+- FastAPI at `http://127.0.0.1:8000`
+- Next.js at `http://127.0.0.1:3000`
