@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { MenuProps } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { normalizeLanguage } from '../i18n';
 import { isRecord } from '../utils/guards';
 
 type CategoryItem = {
   key: string;
   label?: string;
+  labelEn?: string;
   labelKey?: string;
   children?: CategoryItem[];
 };
@@ -29,6 +31,7 @@ const normalizeCategoryItems = (value: unknown): CategoryItem[] => {
     const key = String(rawKey);
 
     const label = typeof entry.label === 'string' ? entry.label : undefined;
+    const labelEn = typeof entry.labelEn === 'string' ? entry.labelEn : undefined;
     const labelKey = typeof entry.labelKey === 'string' ? entry.labelKey : undefined;
     const children = normalizeCategoryItems(entry.children);
 
@@ -36,6 +39,7 @@ const normalizeCategoryItems = (value: unknown): CategoryItem[] => {
       {
         key,
         label,
+        labelEn,
         labelKey,
         children: children.length > 0 ? children : undefined,
       },
@@ -43,17 +47,32 @@ const normalizeCategoryItems = (value: unknown): CategoryItem[] => {
   });
 };
 
+const resolveLabel = (
+  item: CategoryItem,
+  translate: (key: string) => string,
+  language: 'zh' | 'en',
+): string => {
+  if (item.labelKey) {
+    return translate(item.labelKey);
+  }
+  if (language === 'en') {
+    return item.labelEn ?? item.label ?? item.key;
+  }
+  return item.label ?? item.labelEn ?? item.key;
+};
+
 const buildMenuItems = (
   items: CategoryItem[],
   translate: (key: string) => string,
+  language: 'zh' | 'en',
 ): MenuItem[] =>
   items.map((item) => {
-    const label = item.labelKey ? translate(item.labelKey) : item.label ?? item.key;
+    const label = resolveLabel(item, translate, language);
     if (item.children && item.children.length > 0) {
       return {
         key: item.key,
         label,
-        children: buildMenuItems(item.children, translate),
+        children: buildMenuItems(item.children, translate, language),
       };
     }
 
@@ -66,13 +85,14 @@ const buildMenuItems = (
 const buildLabelMap = (
   items: CategoryItem[],
   translate: (key: string) => string,
+  language: 'zh' | 'en',
   map: Record<string, string> = {},
 ): Record<string, string> => {
   items.forEach((item) => {
-    const label = item.labelKey ? translate(item.labelKey) : item.label ?? item.key;
+    const label = resolveLabel(item, translate, language);
     map[item.key] = label;
     if (item.children && item.children.length > 0) {
-      buildLabelMap(item.children, translate, map);
+      buildLabelMap(item.children, translate, language, map);
     }
   });
 
@@ -95,10 +115,12 @@ const findFirstLeafKey = (items: CategoryItem[]): string => {
 };
 
 export const useCategories = (categoriesUrl: string) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [rawItems, setRawItems] = useState<CategoryItem[]>([]);
-  const [sideOpenKeys, setSideOpenKeys] = useState<string[]>([]);
+  const [sideOpenKeys, setSideOpenKeysState] = useState<string[]>([]);
   const [activeCategoryKey, setActiveCategoryKey] = useState('');
+  const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
+  const rootKeys = useMemo(() => rawItems.map((item) => item.key), [rawItems]);
 
   useEffect(() => {
     let isMounted = true;
@@ -117,16 +139,16 @@ export const useCategories = (categoriesUrl: string) => {
             : [];
         if (isMounted) {
           const nextItems = normalizeCategoryItems(items);
-          const nextOpenKeys = nextItems.map((item) => item.key);
+          const firstOpenKey = nextItems[0]?.key;
           setRawItems(nextItems);
-          setSideOpenKeys(nextOpenKeys);
+          setSideOpenKeysState(firstOpenKey ? [firstOpenKey] : []);
           setActiveCategoryKey((prev) => prev || findFirstLeafKey(nextItems));
         }
       } catch (error) {
         console.warn(error);
         if (isMounted) {
           setRawItems([]);
-          setSideOpenKeys([]);
+          setSideOpenKeysState([]);
           setActiveCategoryKey('');
         }
       }
@@ -140,11 +162,31 @@ export const useCategories = (categoriesUrl: string) => {
   }, [categoriesUrl]);
 
   const sideMenuItems: NonNullable<MenuProps['items']> = useMemo(
-    () => buildMenuItems(rawItems, t),
-    [rawItems, t],
+    () => buildMenuItems(rawItems, t, language),
+    [language, rawItems, t],
   );
 
-  const categoryLabelMap = useMemo(() => buildLabelMap(rawItems, t), [rawItems, t]);
+  const categoryLabelMap = useMemo(
+    () => buildLabelMap(rawItems, t, language),
+    [language, rawItems, t],
+  );
+
+  const setSideOpenKeys = useCallback(
+    (keys: string[]) => {
+      const validKeys = keys.filter((key) => rootKeys.includes(key));
+      const latestOpened = validKeys.find((key) => !sideOpenKeys.includes(key));
+      if (latestOpened) {
+        setSideOpenKeysState([latestOpened]);
+        return;
+      }
+      if (validKeys.length === 0) {
+        setSideOpenKeysState([]);
+        return;
+      }
+      setSideOpenKeysState([validKeys[0]]);
+    },
+    [rootKeys, sideOpenKeys],
+  );
 
   return {
     sideMenuItems,

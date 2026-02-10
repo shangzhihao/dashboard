@@ -1,0 +1,427 @@
+{
+  "categories": [
+    {
+      "category": "股指",
+      "subcategories": [
+        {
+          "name": "IC",
+          "code": "IC"
+        },
+        {
+          "name": "IF",
+          "code": "IF"
+        },
+        {
+          "name": "IH",
+          "code": "IH"
+        },
+        {
+          "name": "IM",
+          "code": "IM"
+        }
+      ]
+    },
+    {
+      "category": "能化品种",
+      "subcategories": [
+        {
+          "name": "甲醇",
+          "code": "MA"
+        },
+        {
+          "name": "乙二醇",
+          "code": "EG"
+        },
+        {
+          "name": "原油",
+          "code": "SC"
+        },
+        {
+          "name": "沥青",
+          "code": "BU"
+        },
+        {
+          "name": "纸浆",
+          "code": "SP"
+        },
+        {
+          "name": "纯碱",
+          "code": "SA"
+        },
+        {
+          "name": "玻璃",
+          "code": "FG"
+        },
+        {
+          "name": "塑料",
+          "code": "L"
+        },
+        {
+          "name": "聚丙烯",
+          "code": "PP"
+        },
+        {
+          "name": "苯乙烯",
+          "code": "EB"
+        },
+        {
+          "name": "20号胶",
+          "code": "NR"
+        },
+        {
+          "name": "尿素",
+          "code": "UR"
+        },
+        {
+          "name": "天然橡胶",
+          "code": "RU"
+        },
+        {
+          "name": "燃油",
+          "code": "FU"
+        },
+        {
+          "name": "胶板",
+          "code": "BB"
+        },
+        {
+          "name": "纤板",
+          "code": "FB"
+        },
+        {
+          "name": "PVC",
+          "code": "V"
+        },
+        {
+          "name": "短纤",
+          "code": "PF"
+        },
+        {
+          "name": "PTA",
+          "code": "TA"
+        },
+        {
+          "name": "低硫燃料油",
+          "code": "LU"
+        },
+        {
+          "name": "液化石油气",
+          "code": "PG"
+        },
+        {
+          "name": "丁二烯橡胶",
+          "code": "BR"
+        },
+        {
+          "name": "集装箱结算运价指数",
+          "code": "EC"
+        },
+        {
+          "name": "对二甲苯",
+          "code": "PX"
+        },
+        {
+          "name": "烧碱",
+          "code": "SH"
+        },
+        {
+          "name": "瓶片",
+          "code": "PR"
+        },
+        {
+          "name": "丙烯",
+          "code": "PL"
+        },
+        {
+          "name": "纯苯",
+          "code": "BZ"
+        }
+      ]
+    },
+    {
+      "category": "国债",
+      "subcategories": [
+        {
+          "name": "二债",
+          "code": "TS"
+        },
+        {
+          "name": "五债",
+          "code": "TF"
+        },
+        {
+          "name": "十债",
+          "code": "T"
+        },
+        {
+          "name": "三十债",
+          "code": "TL"
+        }
+      ]
+    },
+    {
+      "category": "有色",
+      "subcategories": [
+        {
+          "name": "铜",
+          "code": "CU"
+        },
+        {
+          "name": "铝",
+          "code": "AL"
+        },
+        {
+          "name": "锌",
+          "code": "ZN"
+        },
+        {
+          "name": "铅",
+          "code": "PB"
+        },
+        {
+          "name": "镍",
+          "code": "NI"
+        },
+        {
+          "name": "锡",
+          "code": "SN"
+        },
+        {
+          "name": "不锈钢",
+          "code": "SS"
+        },
+        {
+          "name": "国际铜",
+          "code": "BC"
+        },
+        {
+          "name": "金",
+          "code": "AU"
+        },
+        {
+          "name": "银",
+          "code": "AG"
+        },
+        {
+          "name": "氧化铝",
+          "code": "AO"
+        },
+        {
+          "name": "工业硅",
+          "code": "SI"
+        },
+        {
+          "name": "碳酸锂",
+          "code": "LC"
+        },
+        {
+          "name": "多晶硅",
+          "code": "PS"
+        },
+        {
+          "name": "铝合金",
+          "code": "AD"
+        },
+        {
+          "name": "铂",
+          "code": "PT"
+        },
+        {
+          "name": "钯",
+          "code": "PD"
+        }
+      ]
+    },
+    {
+      "category": "农产品",
+      "subcategories": [
+        {
+          "name": "豆一",
+          "code": "A"
+        },
+        {
+          "name": "豆二",
+          "code": "B"
+        },
+        {
+          "name": "花生",
+          "code": "PK"
+        },
+        {
+          "name": "豆粕",
+          "code": "M"
+        },
+        {
+          "name": "豆油",
+          "code": "Y"
+        },
+        {
+          "name": "棕榈",
+          "code": "P"
+        },
+        {
+          "name": "菜粕",
+          "code": "RM"
+        },
+        {
+          "name": "菜油",
+          "code": "OI"
+        },
+        {
+          "name": "白糖",
+          "code": "SR"
+        },
+        {
+          "name": "棉花",
+          "code": "CF"
+        },
+        {
+          "name": "棉纱",
+          "code": "CY"
+        },
+        {
+          "name": "鸡蛋",
+          "code": "JD"
+        },
+        {
+          "name": "生猪",
+          "code": "LH"
+        },
+        {
+          "name": "玉米",
+          "code": "C"
+        },
+        {
+          "name": "淀粉",
+          "code": "CS"
+        },
+        {
+          "name": "苹果",
+          "code": "AP"
+        },
+        {
+          "name": "红枣",
+          "code": "CJ"
+        },
+        {
+          "name": "粳米",
+          "code": "RR"
+        },
+        {
+          "name": "早稻",
+          "code": "RI"
+        },
+        {
+          "name": "粳稻",
+          "code": "JR"
+        },
+        {
+          "name": "晚稻",
+          "code": "LR"
+        },
+        {
+          "name": "强麦",
+          "code": "WH"
+        },
+        {
+          "name": "普麦",
+          "code": "PM"
+        },
+        {
+          "name": "原木",
+          "code": "LG"
+        }
+      ]
+    },
+    {
+      "category": "黑色系",
+      "subcategories": [
+        {
+          "name": "动力煤",
+          "code": "ZC"
+        },
+        {
+          "name": "焦煤",
+          "code": "JM"
+        },
+        {
+          "name": "焦炭",
+          "code": "J"
+        },
+        {
+          "name": "铁矿石",
+          "code": "I"
+        },
+        {
+          "name": "螺纹",
+          "code": "RB"
+        },
+        {
+          "name": "热卷",
+          "code": "HC"
+        },
+        {
+          "name": "锰硅",
+          "code": "SM"
+        },
+        {
+          "name": "硅铁",
+          "code": "SF"
+        },
+        {
+          "name": "线材",
+          "code": "WR"
+        }
+      ]
+    },
+    {
+      "category": "未分类",
+      "subcategories": [
+        {
+          "name": "ER",
+          "code": "ER"
+        },
+        {
+          "name": "LF",
+          "code": "LF"
+        },
+        {
+          "name": "ME",
+          "code": "ME"
+        },
+        {
+          "name": "OP",
+          "code": "OP"
+        },
+        {
+          "name": "PPF",
+          "code": "PPF"
+        },
+        {
+          "name": "RO",
+          "code": "RO"
+        },
+        {
+          "name": "RS",
+          "code": "RS"
+        },
+        {
+          "name": "TC",
+          "code": "TC"
+        },
+        {
+          "name": "VF",
+          "code": "VF"
+        },
+        {
+          "name": "WS",
+          "code": "WS"
+        },
+        {
+          "name": "WT",
+          "code": "WT"
+        }
+      ]
+    }
+  ]
+}

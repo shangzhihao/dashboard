@@ -1,44 +1,536 @@
 [
   {
-    "key": "black",
-    "label": "黑色系",
-    "labelKey": "category.black.title",
+    "key": "equity-index",
+    "label": "股指",
+    "labelEn": "Equity Index",
     "children": [
-      { "key": "black-iron", "label": "铁矿", "labelKey": "category.black.iron" },
-      { "key": "black-rebar", "label": "螺纹", "labelKey": "category.black.rebar" },
-      { "key": "black-hot", "label": "热卷", "labelKey": "category.black.hot" },
-      { "key": "black-coal", "label": "焦煤", "labelKey": "category.black.coal" }
+      {
+        "key": "IC",
+        "label": "IC",
+        "labelEn": "CSI 500 Index"
+      },
+      {
+        "key": "IF",
+        "label": "IF",
+        "labelEn": "CSI 300 Index"
+      },
+      {
+        "key": "IH",
+        "label": "IH",
+        "labelEn": "SSE 50 Index"
+      },
+      {
+        "key": "IM",
+        "label": "IM",
+        "labelEn": "CSI 1000 Index"
+      }
     ]
   },
   {
-    "key": "agri",
-    "label": "农产品",
-    "labelKey": "category.agri.title",
+    "key": "energy-chemicals",
+    "label": "能化品种",
+    "labelEn": "Energy & Chemicals",
     "children": [
-      { "key": "agri-meal", "label": "豆粕", "labelKey": "category.agri.meal" },
-      { "key": "agri-corn", "label": "玉米", "labelKey": "category.agri.corn" },
-      { "key": "agri-oil", "label": "棕榈", "labelKey": "category.agri.oil" }
+      {
+        "key": "MA",
+        "label": "甲醇",
+        "labelEn": "Methanol"
+      },
+      {
+        "key": "EG",
+        "label": "乙二醇",
+        "labelEn": "Ethylene Glycol"
+      },
+      {
+        "key": "SC",
+        "label": "原油",
+        "labelEn": "Crude Oil"
+      },
+      {
+        "key": "BU",
+        "label": "沥青",
+        "labelEn": "Bitumen"
+      },
+      {
+        "key": "SP",
+        "label": "纸浆",
+        "labelEn": "Pulp"
+      },
+      {
+        "key": "SA",
+        "label": "纯碱",
+        "labelEn": "Soda Ash"
+      },
+      {
+        "key": "FG",
+        "label": "玻璃",
+        "labelEn": "Glass"
+      },
+      {
+        "key": "L",
+        "label": "塑料",
+        "labelEn": "Linear Low-Density Polyethylene"
+      },
+      {
+        "key": "PP",
+        "label": "聚丙烯",
+        "labelEn": "Polypropylene"
+      },
+      {
+        "key": "EB",
+        "label": "苯乙烯",
+        "labelEn": "Styrene"
+      },
+      {
+        "key": "NR",
+        "label": "20号胶",
+        "labelEn": "No.20 Rubber"
+      },
+      {
+        "key": "UR",
+        "label": "尿素",
+        "labelEn": "Urea"
+      },
+      {
+        "key": "RU",
+        "label": "天然橡胶",
+        "labelEn": "Natural Rubber"
+      },
+      {
+        "key": "FU",
+        "label": "燃油",
+        "labelEn": "Fuel Oil"
+      },
+      {
+        "key": "BB",
+        "label": "胶板",
+        "labelEn": "Plywood"
+      },
+      {
+        "key": "FB",
+        "label": "纤板",
+        "labelEn": "Fiberboard"
+      },
+      {
+        "key": "V",
+        "label": "PVC",
+        "labelEn": "PVC"
+      },
+      {
+        "key": "PF",
+        "label": "短纤",
+        "labelEn": "Polyester Staple Fiber"
+      },
+      {
+        "key": "TA",
+        "label": "PTA",
+        "labelEn": "PTA"
+      },
+      {
+        "key": "LU",
+        "label": "低硫燃料油",
+        "labelEn": "Low-Sulfur Fuel Oil"
+      },
+      {
+        "key": "PG",
+        "label": "液化石油气",
+        "labelEn": "LPG"
+      },
+      {
+        "key": "BR",
+        "label": "丁二烯橡胶",
+        "labelEn": "Butadiene Rubber"
+      },
+      {
+        "key": "EC",
+        "label": "集装箱结算运价指数",
+        "labelEn": "Container Freight Index"
+      },
+      {
+        "key": "PX",
+        "label": "对二甲苯",
+        "labelEn": "Paraxylene"
+      },
+      {
+        "key": "SH",
+        "label": "烧碱",
+        "labelEn": "Caustic Soda"
+      },
+      {
+        "key": "PR",
+        "label": "瓶片",
+        "labelEn": "PET Bottle Flakes"
+      },
+      {
+        "key": "PL",
+        "label": "丙烯",
+        "labelEn": "Propylene"
+      },
+      {
+        "key": "BZ",
+        "label": "纯苯",
+        "labelEn": "Benzene"
+      }
     ]
   },
   {
-    "key": "energy",
-    "label": "能源化工",
-    "labelKey": "category.energy.title",
+    "key": "government-bonds",
+    "label": "国债",
+    "labelEn": "Government Bonds",
     "children": [
-      { "key": "energy-crude", "label": "原油", "labelKey": "category.energy.crude" },
-      { "key": "energy-fuel", "label": "燃油", "labelKey": "category.energy.fuel" },
-      { "key": "energy-bitumen", "label": "沥青", "labelKey": "category.energy.bitumen" }
+      {
+        "key": "TS",
+        "label": "二债",
+        "labelEn": "2-Year Treasury Futures"
+      },
+      {
+        "key": "TF",
+        "label": "五债",
+        "labelEn": "5-Year Treasury Futures"
+      },
+      {
+        "key": "T",
+        "label": "十债",
+        "labelEn": "10-Year Treasury Futures"
+      },
+      {
+        "key": "TL",
+        "label": "三十债",
+        "labelEn": "30-Year Treasury Futures"
+      }
     ]
   },
   {
-    "key": "metal",
+    "key": "non-ferrous",
     "label": "有色",
-    "labelKey": "category.metal.title",
+    "labelEn": "Non-Ferrous Metals",
     "children": [
-      { "key": "metal-cu", "label": "铜/CU", "labelKey": "category.metal.cu" },
-      { "key": "metal-al", "label": "铝/AL", "labelKey": "category.metal.al" },
-      { "key": "metal-zn", "label": "锌/ZN", "labelKey": "category.metal.zn" },
-      { "key": "metal-ni", "label": "镍/NI", "labelKey": "category.metal.ni" }
+      {
+        "key": "CU",
+        "label": "铜",
+        "labelEn": "Copper"
+      },
+      {
+        "key": "AL",
+        "label": "铝",
+        "labelEn": "Aluminum"
+      },
+      {
+        "key": "ZN",
+        "label": "锌",
+        "labelEn": "Zinc"
+      },
+      {
+        "key": "PB",
+        "label": "铅",
+        "labelEn": "Lead"
+      },
+      {
+        "key": "NI",
+        "label": "镍",
+        "labelEn": "Nickel"
+      },
+      {
+        "key": "SN",
+        "label": "锡",
+        "labelEn": "Tin"
+      },
+      {
+        "key": "SS",
+        "label": "不锈钢",
+        "labelEn": "Stainless Steel"
+      },
+      {
+        "key": "BC",
+        "label": "国际铜",
+        "labelEn": "International Copper"
+      },
+      {
+        "key": "AU",
+        "label": "金",
+        "labelEn": "Gold"
+      },
+      {
+        "key": "AG",
+        "label": "银",
+        "labelEn": "Silver"
+      },
+      {
+        "key": "AO",
+        "label": "氧化铝",
+        "labelEn": "Alumina"
+      },
+      {
+        "key": "SI",
+        "label": "工业硅",
+        "labelEn": "Industrial Silicon"
+      },
+      {
+        "key": "LC",
+        "label": "碳酸锂",
+        "labelEn": "Lithium Carbonate"
+      },
+      {
+        "key": "PS",
+        "label": "多晶硅",
+        "labelEn": "Polysilicon"
+      },
+      {
+        "key": "AD",
+        "label": "铝合金",
+        "labelEn": "Aluminum Alloy"
+      },
+      {
+        "key": "PT",
+        "label": "铂",
+        "labelEn": "Platinum"
+      },
+      {
+        "key": "PD",
+        "label": "钯",
+        "labelEn": "Palladium"
+      }
+    ]
+  },
+  {
+    "key": "agriculture",
+    "label": "农产品",
+    "labelEn": "Agricultural Products",
+    "children": [
+      {
+        "key": "A",
+        "label": "豆一",
+        "labelEn": "Soybean No.1"
+      },
+      {
+        "key": "B",
+        "label": "豆二",
+        "labelEn": "Soybean No.2"
+      },
+      {
+        "key": "PK",
+        "label": "花生",
+        "labelEn": "Peanut"
+      },
+      {
+        "key": "M",
+        "label": "豆粕",
+        "labelEn": "Soybean Meal"
+      },
+      {
+        "key": "Y",
+        "label": "豆油",
+        "labelEn": "Soybean Oil"
+      },
+      {
+        "key": "P",
+        "label": "棕榈",
+        "labelEn": "Palm Oil"
+      },
+      {
+        "key": "RM",
+        "label": "菜粕",
+        "labelEn": "Rapeseed Meal"
+      },
+      {
+        "key": "OI",
+        "label": "菜油",
+        "labelEn": "Rapeseed Oil"
+      },
+      {
+        "key": "SR",
+        "label": "白糖",
+        "labelEn": "Sugar"
+      },
+      {
+        "key": "CF",
+        "label": "棉花",
+        "labelEn": "Cotton"
+      },
+      {
+        "key": "CY",
+        "label": "棉纱",
+        "labelEn": "Cotton Yarn"
+      },
+      {
+        "key": "JD",
+        "label": "鸡蛋",
+        "labelEn": "Egg"
+      },
+      {
+        "key": "LH",
+        "label": "生猪",
+        "labelEn": "Live Hog"
+      },
+      {
+        "key": "C",
+        "label": "玉米",
+        "labelEn": "Corn"
+      },
+      {
+        "key": "CS",
+        "label": "淀粉",
+        "labelEn": "Corn Starch"
+      },
+      {
+        "key": "AP",
+        "label": "苹果",
+        "labelEn": "Apple"
+      },
+      {
+        "key": "CJ",
+        "label": "红枣",
+        "labelEn": "Red Date"
+      },
+      {
+        "key": "RR",
+        "label": "粳米",
+        "labelEn": "Japonica Rice"
+      },
+      {
+        "key": "RI",
+        "label": "早稻",
+        "labelEn": "Early Rice"
+      },
+      {
+        "key": "JR",
+        "label": "粳稻",
+        "labelEn": "Japonica Paddy"
+      },
+      {
+        "key": "LR",
+        "label": "晚稻",
+        "labelEn": "Late Rice"
+      },
+      {
+        "key": "WH",
+        "label": "强麦",
+        "labelEn": "Strong Wheat"
+      },
+      {
+        "key": "PM",
+        "label": "普麦",
+        "labelEn": "Common Wheat"
+      },
+      {
+        "key": "LG",
+        "label": "原木",
+        "labelEn": "Logs"
+      }
+    ]
+  },
+  {
+    "key": "ferrous",
+    "label": "黑色系",
+    "labelEn": "Ferrous",
+    "children": [
+      {
+        "key": "ZC",
+        "label": "动力煤",
+        "labelEn": "Thermal Coal"
+      },
+      {
+        "key": "JM",
+        "label": "焦煤",
+        "labelEn": "Coking Coal"
+      },
+      {
+        "key": "J",
+        "label": "焦炭",
+        "labelEn": "Coke"
+      },
+      {
+        "key": "I",
+        "label": "铁矿石",
+        "labelEn": "Iron Ore"
+      },
+      {
+        "key": "RB",
+        "label": "螺纹",
+        "labelEn": "Rebar"
+      },
+      {
+        "key": "HC",
+        "label": "热卷",
+        "labelEn": "Hot-Rolled Coil"
+      },
+      {
+        "key": "SM",
+        "label": "锰硅",
+        "labelEn": "Silicomanganese"
+      },
+      {
+        "key": "SF",
+        "label": "硅铁",
+        "labelEn": "Ferrosilicon"
+      },
+      {
+        "key": "WR",
+        "label": "线材",
+        "labelEn": "Wire Rod"
+      }
+    ]
+  },
+  {
+    "key": "uncategorized",
+    "label": "未分类",
+    "labelEn": "Uncategorized",
+    "children": [
+      {
+        "key": "ER",
+        "label": "ER",
+        "labelEn": "ER"
+      },
+      {
+        "key": "LF",
+        "label": "LF",
+        "labelEn": "LF"
+      },
+      {
+        "key": "ME",
+        "label": "ME",
+        "labelEn": "ME"
+      },
+      {
+        "key": "OP",
+        "label": "OP",
+        "labelEn": "OP"
+      },
+      {
+        "key": "PPF",
+        "label": "PPF",
+        "labelEn": "PPF"
+      },
+      {
+        "key": "RO",
+        "label": "RO",
+        "labelEn": "RO"
+      },
+      {
+        "key": "RS",
+        "label": "RS",
+        "labelEn": "RS"
+      },
+      {
+        "key": "TC",
+        "label": "TC",
+        "labelEn": "TC"
+      },
+      {
+        "key": "VF",
+        "label": "VF",
+        "labelEn": "VF"
+      },
+      {
+        "key": "WS",
+        "label": "WS",
+        "labelEn": "WS"
+      },
+      {
+        "key": "WT",
+        "label": "WT",
+        "labelEn": "WT"
+      }
     ]
   }
 ]
