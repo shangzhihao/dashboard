@@ -204,11 +204,13 @@ code {
 }
 
 .app-shell {
+  height: calc(100vh - 60px);
   padding: 18px 22px 40px;
   gap: 18px;
   background: transparent;
   position: relative;
   z-index: 1;
+  overflow: hidden;
 }
 
 .app-sider {
@@ -217,6 +219,18 @@ code {
   padding: 16px 0;
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-sider .ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 .side-header {
@@ -229,6 +243,11 @@ code {
 .side-menu {
   border-right: none;
   background: transparent;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .side-menu .ant-menu-submenu-title {
@@ -250,6 +269,8 @@ code {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .pill-grid {
@@ -406,10 +427,18 @@ code {
 @media (max-width: 1024px) {
   .app-shell {
     flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 60px);
+    overflow: visible;
   }
 
   .app-sider {
     width: 100% !important;
+    max-height: 40vh;
+  }
+
+  .app-content {
+    overflow: visible;
   }
 }
 
