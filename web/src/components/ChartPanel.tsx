@@ -21,7 +21,7 @@ import type {
   ChartTitlesConfig,
   ChartTooltipProps,
 } from '../types/chart';
-import { normalizeSeriesConfig, tooltipFormatter } from '../utils/chart';
+import { axisTickFormatter, normalizeSeriesConfig, tooltipFormatter } from '../utils/chart';
 
 const { Title } = Typography;
 
@@ -90,7 +90,7 @@ const ChartPanel = ({
   onContractChange,
   onMetricChange,
 }: ChartPanelProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [hiddenSeriesKeys, setHiddenSeriesKeys] = useState<Set<string>>(new Set());
 
   const resolvedSeries = useMemo(
@@ -162,6 +162,11 @@ const ChartPanel = ({
     return [nextMin, nextMax];
   }, [chartData, visibleSeries]);
 
+  const yAxisTickFormatter = useMemo(
+    () => (value: string | number) => axisTickFormatter(value, i18n.language),
+    [i18n.language],
+  );
+
   const handleLegendToggle = (dataKey: string) => {
     setHiddenSeriesKeys((prev) => {
       const next = new Set(prev);
@@ -200,6 +205,11 @@ const ChartPanel = ({
     );
   };
 
+  // Reserve legend space by estimated rows so wrapped items never overlap chart content.
+  const legendRows = Math.max(1, Math.ceil(resolvedSeries.length / 13));
+  const legendHeight = 36 + (legendRows - 1) * 24;
+  const chartMinHeight = 320 + (legendRows - 1) * 24;
+
   return (
     <Card className="panel" styles={{ body: { padding: 18 } }}>
       <div className="panel-header">
@@ -223,11 +233,11 @@ const ChartPanel = ({
       </div>
 
       <Card className="chart-card" styles={{ body: { padding: 16 } }}>
-        <div className="chart-wrap" style={{ minHeight: 320 }}>
+        <div className="chart-wrap" style={{ minHeight: chartMinHeight }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={chartData}
-              margin={{ top: 10, right: 24, left: 0, bottom: 0 }}
+              margin={{ top: 10, right: 24, left: 10, bottom: 0 }}
               onClick={handleChartClick}
             >
               <defs>
@@ -265,19 +275,22 @@ const ChartPanel = ({
               <YAxis
                 yAxisId="left"
                 tick={{ fill: '#7a8199', fontSize: 11 }}
-                width={48}
+                width={84}
+                tickMargin={8}
                 domain={yAxisDomain}
+                tickFormatter={yAxisTickFormatter}
                 label={{
                   value: leftAxisLabel,
                   angle: -90,
                   position: 'insideLeft',
+                  dx: 6,
                   fill: '#a0a7bd',
                 }}
               />
               <Tooltip content={<ChartTooltip />} />
               <Legend
                 verticalAlign="top"
-                height={36}
+                height={legendHeight}
                 iconType="circle"
                 content={renderLegend}
               />
@@ -291,6 +304,7 @@ const ChartPanel = ({
                     type="monotone"
                     dataKey={series.key}
                     name={seriesLabel}
+                    connectNulls
                     stroke={series.color}
                     strokeWidth={series.strokeWidth}
                     fill={`url(#area-${series.key})`}
@@ -302,6 +316,7 @@ const ChartPanel = ({
                     type="monotone"
                     dataKey={series.key}
                     name={seriesLabel}
+                    connectNulls
                     stroke={series.color}
                     strokeWidth={series.strokeWidth}
                     dot={false}

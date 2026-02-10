@@ -1,4 +1,4 @@
-import i18n, { getNumberLocale } from '../i18n';
+import i18n, { getNumberLocale, normalizeLanguage } from '../i18n';
 import type {
   ChartDatum,
   ChartSeriesConfig,
@@ -46,6 +46,29 @@ export const fallbackSeries: ChartSeriesConfig[] = [
 
 export const tooltipFormatter = (value: number | string | null | undefined) =>
   new Intl.NumberFormat(getNumberLocale(i18n.language)).format(Number(value ?? 0));
+
+export const axisTickFormatter = (
+  value: number | string | null | undefined,
+  language: string = i18n.language,
+) => {
+  const numericValue = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(numericValue)) {
+    return String(value ?? '');
+  }
+
+  const locale = getNumberLocale(language);
+  const integerFormatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
+  if (Math.abs(numericValue) <= 10000) {
+    return integerFormatter.format(numericValue);
+  }
+
+  const normalizedLanguage = normalizeLanguage(language);
+  const compactFormatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
+  const compactValue =
+    normalizedLanguage === 'zh' ? numericValue / 10000 : numericValue / 1000;
+  const suffix = normalizedLanguage === 'zh' ? '万' : 'K';
+  return `${compactFormatter.format(compactValue)}${suffix}`;
+};
 
 export const normalizeSeriesConfig = (
   rawSeries: unknown,
