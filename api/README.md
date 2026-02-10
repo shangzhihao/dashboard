@@ -15,7 +15,7 @@ uv run uvicorn app.main:app --reload --port 8000
 ## Endpoints
 
 - `GET /health`
-- `GET /data/mock/{metric}/{category}/{contract}.json`
+- `GET /data/futures/{metric}/{category}/{contract}.json`
 - `GET /docs` (Swagger UI)
 
-Chart mock payloads are generated dynamically per request; no local mock data folder is required.
+Chart payloads are generated dynamically from `data/futures.parquet`.

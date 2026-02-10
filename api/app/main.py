@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
+from calendar import monthrange
 from datetime import date
-from datetime import timedelta
+from datetime import datetime
 from functools import lru_cache
-import hashlib
 import json
-import math
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import pyarrow.compute as pc
+import pyarrow.parquet as pq
 
 SERIES_COLORS: tuple[str, ...] = (
     "#c63e34",
@@ -24,9 +26,6 @@ SERIES_COLORS: tuple[str, ...] = (
     "#a3a9bc",
     "#c2c5d0",
 )
-SERIES_COUNT = 8
-DAYS_COUNT = 160
-START_DATE = date(2024, 1, 2)
 
 app = FastAPI(
     title="Futures Dashboard API",
@@ -58,14 +57,6 @@ def load_json(path: Path) -> object:
         raise HTTPException(status_code=500, detail="Invalid source data format") from exc
 
 
-def stable_number(token: str, minimum: int, maximum: int) -> int:
-    """Create a deterministic integer in [minimum, maximum]."""
-    digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
-    value = int(digest[:8], 16)
-    span = (maximum - minimum) + 1
-    return minimum + (value % span)
-
-
 def extract_leaf_categories(items: list[dict[str, object]]) -> set[str]:
     """Extract leaf category keys from nested categories payload."""
     leaf_keys: set[str] = set()
@@ -90,6 +81,15 @@ def valid_categories() -> set[str]:
     return extract_leaf_categories(dict_items)
 
 
+def normalize_contract_key(contract: str) -> str | None:
+    """Normalize filter contract key to API contract month (01-12)."""
+    if contract.startswith("c") and len(contract) == 3 and contract[1:].isdigit():
+        return contract[1:]
+    if len(contract) == 2 and contract.isdigit():
+        return contract
+    return None
+
+
 @lru_cache(maxsize=1)
 def metric_contracts() -> dict[str, set[str]]:
     """Load and cache allowed contracts per metric."""
@@ -108,7 +108,14 @@ def metric_contracts() -> dict[str, set[str]]:
         contract_keys = metric.get("contractKeys")
         if not isinstance(metric_key, str) or not isinstance(contract_keys, list):
             continue
-        mapping[metric_key] = {entry for entry in contract_keys if isinstance(entry, str)}
+        normalized_contracts = {
+            normalized
+            for entry in contract_keys
+            if isinstance(entry, str)
+            for normalized in [normalize_contract_key(entry)]
+            if normalized is not None
+        }
+        mapping[metric_key] = normalized_contracts
     return mapping
 
 
@@ -123,99 +130,198 @@ def validate_request(metric: str, category: str, contract: str) -> None:
         raise HTTPException(status_code=404, detail="Unknown contract")
 
 
-def category_symbol(category: str) -> str:
-    """Create a short symbol from category key."""
-    tail = category.split("-")[-1]
-    letters = "".join(ch for ch in tail if ch.isalpha()).upper()
-    if len(letters) >= 2:
-        return letters[:2]
-    return (letters + "X")[:2]
+def project_root() -> Path:
+    """Resolve repository root path."""
+    return Path(__file__).resolve().parents[2]
 
 
-def series_contract_suffix(contract: str, index: int) -> str:
-    """Build year-contract suffix used in series labels."""
-    year = 26 - index
-    if contract == "index":
-        return f"idx{year}"
-    month = contract[1:] if contract.startswith("c") and len(contract) == 3 else "00"
-    return f"{year}{month}"
+def futures_parquet_path() -> Path:
+    """Resolve futures parquet file path."""
+    return project_root() / "data" / "futures.parquet"
 
 
-def build_series(metric: str, category: str, contract: str) -> list[dict[str, object]]:
-    """Build chart series definitions."""
-    symbol = category_symbol(category)
+@lru_cache(maxsize=1)
+def futures_table():
+    """Load futures parquet data once per process."""
+    path = futures_parquet_path()
+    try:
+        return pq.read_table(
+            path,
+            columns=["item", "year", "month", "eob", "close", "volume"],
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=500, detail="Missing futures parquet file") from exc
+
+
+def metric_column(metric: str) -> str:
+    """Resolve metric to source parquet column."""
+    if metric == "price":
+        return "close"
+    if metric == "positions":
+        # Dataset currently has no open-interest column; use volume for positions.
+        return "volume"
+    raise HTTPException(status_code=404, detail="Unknown metric")
+
+
+def contract_month_value(contract: str) -> int:
+    """Parse and validate contract month (01-12)."""
+    if len(contract) != 2 or not contract.isdigit():
+        raise HTTPException(status_code=404, detail="Unknown contract")
+    month = int(contract)
+    if month < 1 or month > 12:
+        raise HTTPException(status_code=404, detail="Unknown contract")
+    return month
+
+
+def parse_eob_date(value: Any) -> date | None:
+    """Parse eob string to date."""
+    if not isinstance(value, str):
+        return None
+    try:
+        return datetime.fromisoformat(value).date()
+    except ValueError:
+        return None
+
+
+def normalized_value(value: Any, metric: str) -> int | float | None:
+    """Normalize metric value for response payload."""
+    if value is None:
+        return None
+    if metric == "positions":
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def month_day_key(value: date) -> str:
+    """Format one date value as MM-DD."""
+    return value.strftime("%m-%d")
+
+
+def month_day_sort_key(value: str, start_month: int) -> tuple[int, int]:
+    """Sort MM-DD values starting from contract month (seasonal order)."""
+    month_text, day_text = value.split("-", maxsplit=1)
+    month = int(month_text)
+    day = int(day_text)
+    season_month_index = (month - start_month) % 12
+    return (season_month_index, day)
+
+
+def matching_rows(metric: str, category: str, contract: str) -> list[dict[str, Any]]:
+    """Load and normalize rows for one item + contract-month."""
+    table = futures_table()
+    mask = pc.and_(
+        pc.equal(table["item"], category),
+        pc.equal(table["month"], contract),
+    )
+    filtered = table.filter(mask)
+    if filtered.num_rows == 0:
+        raise HTTPException(status_code=404, detail="No data for category/contract")
+
+    value_column = metric_column(metric)
+    rows: list[dict[str, Any]] = []
+    for year_raw, eob_raw, value_raw in zip(
+        filtered["year"].to_pylist(),
+        filtered["eob"].to_pylist(),
+        filtered[value_column].to_pylist(),
+    ):
+        if year_raw is None:
+            continue
+        try:
+            series_year = int(str(year_raw))
+        except ValueError:
+            continue
+
+        eob_day = parse_eob_date(eob_raw)
+        metric_value = normalized_value(value_raw, metric)
+        if eob_day is None or metric_value is None:
+            continue
+        rows.append(
+            {
+                "series_year": series_year,
+                "eob": eob_day,
+                "value": metric_value,
+            }
+        )
+
+    if not rows:
+        raise HTTPException(status_code=404, detail="No valid rows after normalization")
+    return rows
+
+
+def seasonal_chart_payload(metric: str, category: str, contract: str) -> dict[str, object]:
+    """Build chart payload using futures parquet rows."""
+    contract_month = contract_month_value(contract)
+    rows = matching_rows(metric, category, contract)
+    available_years = sorted({entry["series_year"] for entry in rows}, reverse=True)
+
+    by_date: dict[str, dict[str, object]] = {}
     series: list[dict[str, object]] = []
-    for index in range(SERIES_COUNT):
-        suffix = series_contract_suffix(contract, index)
-        key = f"{symbol.lower()}{suffix}"
+    series_index = 0
+
+    for series_year in available_years:
+        start_date = date(series_year - 1, contract_month, 1)
+        end_date = date(series_year, contract_month, monthrange(series_year, contract_month)[1])
+
+        window_rows = [
+            entry
+            for entry in rows
+            if entry["series_year"] == series_year
+            and start_date <= entry["eob"] <= end_date
+        ]
+        if not window_rows:
+            continue
+
+        series_key = f"y{series_year}{contract}"
         series.append(
             {
-                "key": key,
-                "label": f"{symbol}{suffix.upper()}",
-                "labelKey": None,
+                "key": series_key,
+                "label": f"{series_year}-{contract}",
                 "type": "line",
                 "yAxisId": "left",
-                "color": SERIES_COLORS[index % len(SERIES_COLORS)],
+                "color": SERIES_COLORS[series_index % len(SERIES_COLORS)],
                 "strokeWidth": 2,
             }
         )
-    return series
+        series_index += 1
 
+        for entry in window_rows:
+            day_key = month_day_key(entry["eob"])
+            row = by_date.setdefault(day_key, {"date": day_key})
+            # Keep the first value for duplicated MM-DD in the same contract-year window.
+            if series_key not in row:
+                row[series_key] = entry["value"]
 
-def metric_shift(metric: str) -> int:
-    """Return baseline value shift by metric."""
-    return 2500 if metric == "price" else 1200
+    if not series:
+        raise HTTPException(status_code=404, detail="No seasonal series for request")
 
+    items = [
+        by_date[day]
+        for day in sorted(
+            by_date,
+            key=lambda day: month_day_sort_key(day, contract_month),
+            reverse=True,
+        )
+    ]
+    axis_label = "价格" if metric == "price" else "持仓(手)"
+    axis_label_key = "chart.axes.left.price" if metric == "price" else "chart.axes.left.positions"
 
-def point_value(
-    metric: str,
-    category: str,
-    contract: str,
-    day_index: int,
-    series_index: int,
-) -> int:
-    """Generate one deterministic value for a chart point."""
-    seed = stable_number(f"{metric}:{category}:{contract}:{series_index}", 0, 10_000)
-    base = stable_number(f"base:{metric}:{category}:{series_index}", 900, 9000)
-    amplitude = 120 + (seed % 220)
-    trend = (seed % 9) - 4
-    seasonal = int(math.sin((day_index + (series_index * 3)) / 8.0) * amplitude)
-    drift = day_index * trend
-    noise = ((day_index + series_index) % 7) * (series_index + 2) * 2
-    value = base + seasonal + drift + noise + metric_shift(metric)
-    return max(80, value)
-
-
-def build_items(
-    metric: str,
-    category: str,
-    contract: str,
-    series: list[dict[str, object]],
-) -> list[dict[str, object]]:
-    """Build chart item rows for requested inputs."""
-    items: list[dict[str, object]] = []
-    for day_index in range(DAYS_COUNT):
-        row_date = START_DATE + timedelta(days=day_index)
-        row: dict[str, object] = {"date": row_date.isoformat()}
-        for series_index, entry in enumerate(series):
-            key = entry["key"]
-            if isinstance(key, str):
-                row[key] = point_value(metric, category, contract, day_index, series_index)
-        items.append(row)
-    return items
+    return {
+        "axes": {"left": {"label": axis_label, "labelKey": axis_label_key}},
+        "series": series,
+        "items": items,
+    }
 
 
 @lru_cache(maxsize=4096)
 def chart_payload(metric: str, category: str, contract: str) -> dict[str, object]:
     """Generate and cache chart payload for one request tuple."""
-    series = build_series(metric, category, contract)
-    axis_label = "价格" if metric == "price" else "持仓(手)"
-    axis_label_key = "chart.axes.left.price" if metric == "price" else "chart.axes.left.positions"
-    return {
-        "axes": {"left": {"label": axis_label, "labelKey": axis_label_key}},
-        "series": series,
-        "items": build_items(metric, category, contract, series),
-    }
+    return seasonal_chart_payload(metric, category, contract)
 
 
 @app.get("/health")
@@ -224,8 +330,8 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.get("/data/mock/{metric}/{category}/{contract}.json")
-async def chart_mock_data(metric: str, category: str, contract: str) -> dict[str, object]:
-    """Generate and return chart mock payload by route params."""
+@app.get("/data/futures/{metric}/{category}/{contract}.json")
+async def chart_futures_data(metric: str, category: str, contract: str) -> dict[str, object]:
+    """Return chart payload by route params from futures parquet."""
     validate_request(metric, category, contract)
     return chart_payload(metric, category, contract)

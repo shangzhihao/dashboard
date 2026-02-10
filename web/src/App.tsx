@@ -23,6 +23,13 @@ const getCurrentContractKey = () => {
   return `c${month}`;
 };
 
+const toApiContract = (contract: string) => {
+  if (/^c\d{2}$/.test(contract)) {
+    return contract.slice(1);
+  }
+  return contract;
+};
+
 function App() {
   const { t } = useTranslation();
   const {
@@ -136,11 +143,12 @@ function App() {
     if (!activeCategoryKey || !metricType || !contractValue) {
       return '';
     }
+    const apiContract = toApiContract(contractValue);
     const baseUrl =
       metricType === 'price'
         ? dataUrls.chartDataPrice
         : dataUrls.chartDataPositions;
-    return `${baseUrl}/${activeCategoryKey}/${contractValue}.json`;
+    return `${baseUrl}/${activeCategoryKey}/${apiContract}.json`;
   }, [activeCategoryKey, activePillView, contractValue, metricType]);
 
   const { chartData, chartSeries, chartAxes, chartTitles } = useChartData(chartDataUrl);

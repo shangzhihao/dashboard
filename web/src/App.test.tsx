@@ -71,7 +71,7 @@ describe('App', () => {
         },
       ],
       [
-        `/data/mock/price/oil/${currentContract}.json`,
+        `/data/futures/price/oil/${currentMonth}.json`,
         {
           items: [{ date: '2024-02-01', price: 10 }],
           series: [{ key: 'price', label: 'Price', type: 'line', yAxisId: 'left' }],

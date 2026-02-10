@@ -34,8 +34,7 @@
         "c09",
         "c10",
         "c11",
-        "c12",
-        "index"
+        "c12"
       ]
     }
   ],
@@ -51,7 +50,6 @@
     { "key": "c09", "labelKey": "filters.contract.c09" },
     { "key": "c10", "labelKey": "filters.contract.c10" },
     { "key": "c11", "labelKey": "filters.contract.c11" },
-    { "key": "c12", "labelKey": "filters.contract.c12" },
-    { "key": "index", "labelKey": "filters.contract.index" }
+    { "key": "c12", "labelKey": "filters.contract.c12" }
   ]
 }

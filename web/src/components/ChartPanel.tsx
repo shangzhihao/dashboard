@@ -60,6 +60,24 @@ const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
   );
 };
 
+const formatMonthDay = (value: string | number) => {
+  const text = String(value);
+  if (/^\d{2}-\d{2}$/.test(text)) {
+    return text;
+  }
+  const match = text.match(/^\d{4}-(\d{2})-(\d{2})/);
+  if (match) {
+    return `${match[1]}-${match[2]}`;
+  }
+  const parsed = new Date(text);
+  if (Number.isNaN(parsed.getTime())) {
+    return text;
+  }
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${month}-${day}`;
+};
+
 const ChartPanel = ({
   chartData,
   chartSeries,
@@ -113,6 +131,36 @@ const ChartPanel = ({
     () => resolvedSeries.filter((series) => !hiddenSeriesKeys.has(series.key)),
     [hiddenSeriesKeys, resolvedSeries],
   );
+
+  const yAxisDomain = useMemo<[number, number] | undefined>(() => {
+    const values: number[] = [];
+    chartData.forEach((row) => {
+      visibleSeries.forEach((series) => {
+        const raw = row[series.key];
+        const value =
+          typeof raw === 'number'
+            ? raw
+            : typeof raw === 'string'
+              ? Number(raw)
+              : NaN;
+        if (Number.isFinite(value)) {
+          values.push(value);
+        }
+      });
+    });
+
+    if (values.length === 0) {
+      return undefined;
+    }
+
+    const minValue = Math.min(...values);
+    const maxValue = Math.max(...values);
+    const range = maxValue - minValue;
+    const padding = range === 0 ? Math.max(Math.abs(maxValue) * 0.05, 1) : range * 0.08;
+    const nextMin = minValue - padding;
+    const nextMax = maxValue + padding;
+    return [nextMin, nextMax];
+  }, [chartData, visibleSeries]);
 
   const handleLegendToggle = (dataKey: string) => {
     setHiddenSeriesKeys((prev) => {
@@ -208,11 +256,17 @@ const ChartPanel = ({
                   ))}
               </defs>
               <CartesianGrid stroke="#e6e9f2" strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tick={{ fill: '#7a8199', fontSize: 11 }} minTickGap={16} />
+              <XAxis
+                dataKey="date"
+                tick={{ fill: '#7a8199', fontSize: 11 }}
+                minTickGap={16}
+                tickFormatter={formatMonthDay}
+              />
               <YAxis
                 yAxisId="left"
                 tick={{ fill: '#7a8199', fontSize: 11 }}
                 width={48}
+                domain={yAxisDomain}
                 label={{
                   value: leftAxisLabel,
                   angle: -90,
@@ -254,7 +308,13 @@ const ChartPanel = ({
                   />
                 );
               })}
-              <Brush dataKey="date" height={24} stroke="#6d63f3" travellerWidth={10} />
+              <Brush
+                dataKey="date"
+                height={24}
+                stroke="#6d63f3"
+                travellerWidth={10}
+                tickFormatter={formatMonthDay}
+              />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
