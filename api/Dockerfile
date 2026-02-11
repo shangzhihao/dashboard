@@ -8,7 +8,7 @@ ENV UV_LINK_MODE=copy \
 
 WORKDIR /workspace/api
 
-COPY api/pyproject.toml api/uv.lock ./
+COPY api/pyproject.toml api/uv.lock api/README.md ./
 COPY api/app ./app
 
 RUN uv sync --frozen --no-dev
@@ -18,4 +18,4 @@ COPY web/public/data /workspace/web/public/data
 
 EXPOSE 8000
 
-CMD ["sh", "-lc", "uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers ${API_WORKERS:-2}"]
+CMD ["sh", "-c", "/workspace/api/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers ${API_WORKERS:-2}"]
