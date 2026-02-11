@@ -1,0 +1,37 @@
+services:
+  background:
+    image: ${BACKGROUND_IMAGE:-futures-background:latest}
+    pull_policy: always
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    environment:
+      API_WORKERS: "${API_WORKERS:-2}"
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-futures-frontend:latest}
+    pull_policy: always
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: /api
+    expose:
+      - "3000"
+    depends_on:
+      - background
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    depends_on:
+      - frontend
+      - background
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
