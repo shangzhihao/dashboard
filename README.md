@@ -41,3 +41,14 @@ This script starts:
 
 - FastAPI at `http://127.0.0.1:8000`
 - Next.js at `http://127.0.0.1:3000`
+
+## Deploy Without Docker
+
+```bash
+./scripts/deploy.sh
+```
+
+Default ports:
+
+- App at `http://127.0.0.1:8888`
+- FastAPI at `http://127.0.0.1:8000` (proxied by Next.js under `/api`)
