@@ -105,14 +105,14 @@ if port_in_use "$WEB_PORT"; then
   echo "Port 3000 is in use; starting frontend on http://${WEB_HOST}:${WEB_PORT} ..."
   (
     cd "$WEB_DIR" &&
-      NEXT_PUBLIC_API_BASE_URL="$API_BASE_URL" npm run dev -- --hostname "$WEB_HOST" --port "$WEB_PORT"
+      NEXT_PUBLIC_API_BASE_URL="$API_BASE_URL" pnpm exec next dev --hostname "$WEB_HOST" --port "$WEB_PORT"
   ) &
   WEB_PID="$!"
 else
   echo "Starting Next.js on http://${WEB_HOST}:${WEB_PORT} ..."
   (
     cd "$WEB_DIR" &&
-      NEXT_PUBLIC_API_BASE_URL="$API_BASE_URL" npm run dev -- --hostname "$WEB_HOST" --port "$WEB_PORT"
+      NEXT_PUBLIC_API_BASE_URL="$API_BASE_URL" pnpm exec next dev --hostname "$WEB_HOST" --port "$WEB_PORT"
   ) &
   WEB_PID="$!"
 fi

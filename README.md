@@ -4,7 +4,7 @@
 
 For local development:
 
-- Node.js 20+ and `npm` ([nodejs.org](https://nodejs.org/))
+- Node.js 20+ and `pnpm` ([nodejs.org](https://nodejs.org/), [pnpm.io](https://pnpm.io/))
 - [`uv`](https://docs.astral.sh/uv/) for Python env/dependency management
 - Python 3.11 runtime (installed automatically by `uv` if not already available)
 
@@ -24,18 +24,18 @@ For Docker launch:
 
 ```bash
 cd web
-npm ci
-npm run dev
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
 Open `http://127.0.0.1:3000`.
 
 Other commands:
 
-- `npm run build`
-- `npm run start`
-- `npm run test`
-- `npm run lint`
+- `pnpm run build`
+- `pnpm run start`
+- `pnpm run test`
+- `pnpm run lint`
 
 ## Backend (api)
 
