@@ -4,14 +4,14 @@
 
 For local development:
 
-- Node.js 20+ and `npm`
-- Python 3.11+
-- `uv`
+- Node.js 20+ and `pnpm` ([nodejs.org](https://nodejs.org/), [pnpm.io](https://pnpm.io/))
+- [`uv`](https://docs.astral.sh/uv/) for Python env/dependency management
+- Python 3.11 runtime (installed automatically by `uv` if not already available)
 
 For Docker launch:
 
-- Docker Engine 24+ (or Docker Desktop)
-- Docker Compose v2 (`docker compose`)
+- Docker Engine 24+ (or Docker Desktop) ([Install Docker](https://docs.docker.com/get-docker/))
+- Docker Compose v2 (`docker compose`) ([Compose docs](https://docs.docker.com/compose/))
 
 ## Layout
 
@@ -24,18 +24,18 @@ For Docker launch:
 
 ```bash
 cd web
-npm ci
-npm run dev
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
 Open `http://127.0.0.1:3000`.
 
 Other commands:
 
-- `npm run build`
-- `npm run start`
-- `npm run test`
-- `npm run lint`
+- `pnpm run build`
+- `pnpm run start`
+- `pnpm run test`
+- `pnpm run lint`
 
 ## Backend (api)
 
@@ -44,6 +44,8 @@ cd api
 uv sync
 uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
+
+If Python 3.11 is not present, `uv` will download and use a compatible interpreter automatically.
 
 Open API docs at `http://127.0.0.1:8000/docs`.
 

@@ -2,6 +2,7 @@
   "name": "dashboard",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.29.3",
   "dependencies": {
     "@rc-component/picker": "^1.9.0",
     "antd": "^6.2.3",

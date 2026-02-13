@@ -23,5 +23,9 @@ api/**/*.pyc
 
 # node package manager logs
 npm-debug.log*
+pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# pnpm local store
+.pnpm-store

@@ -73,7 +73,7 @@ wait_for_shutdown() {
 trap cleanup EXIT INT TERM
 
 require_cmd uv
-require_cmd npm
+require_cmd pnpm
 
 require_port_free "$API_PORT" "API"
 require_port_free "$WEB_PORT" "Web"
@@ -88,13 +88,13 @@ if [[ "$BUILD_ON_START" == "1" ]]; then
   echo "Installing frontend dependencies..."
   (
     cd "$WEB_DIR"
-    npm ci
+    pnpm install --frozen-lockfile
   )
 
   echo "Building frontend..."
   (
     cd "$WEB_DIR"
-    NEXT_PUBLIC_API_BASE_URL="/api" BACKEND_ORIGIN="$BACKEND_ORIGIN" npm run build
+    NEXT_PUBLIC_API_BASE_URL="/api" BACKEND_ORIGIN="$BACKEND_ORIGIN" pnpm run build
   )
 fi
 
@@ -108,7 +108,7 @@ API_PID="$!"
 echo "Starting Next.js on http://${WEB_HOST}:${WEB_PORT} ..."
 (
   cd "$WEB_DIR"
-  NEXT_PUBLIC_API_BASE_URL="/api" BACKEND_ORIGIN="$BACKEND_ORIGIN" npm run start -- --hostname "$WEB_HOST" --port "$WEB_PORT"
+  NEXT_PUBLIC_API_BASE_URL="/api" BACKEND_ORIGIN="$BACKEND_ORIGIN" pnpm exec next start --hostname "$WEB_HOST" --port "$WEB_PORT"
 ) &
 WEB_PID="$!"
 
