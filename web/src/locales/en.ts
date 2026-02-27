@@ -16,6 +16,7 @@ const en = {
     },
     pill: {
       seasonalAnalysis: 'Seasonal Analysis',
+      monthlyChangeStats: 'Monthly Change Stats',
       positionsLeaderboard: 'Positions Leaderboard',
       seatTracking: 'Seat Tracking',
       netPositions: 'Net Positions',
@@ -98,6 +99,27 @@ const en = {
       metric: {
         price: 'Price',
         positions: 'Positions',
+      },
+    },
+    stats: {
+      monthlyChange: {
+        title: '{{category}}/{{contract}} Futures Monthly Change Stats',
+        year: 'Year',
+        note: 'Note: Monthly change = (month close - month open) / month open x 100%',
+        months: {
+          m01: 'Jan',
+          m02: 'Feb',
+          m03: 'Mar',
+          m04: 'Apr',
+          m05: 'May',
+          m06: 'Jun',
+          m07: 'Jul',
+          m08: 'Aug',
+          m09: 'Sep',
+          m10: 'Oct',
+          m11: 'Nov',
+          m12: 'Dec',
+        },
       },
     },
     common: {

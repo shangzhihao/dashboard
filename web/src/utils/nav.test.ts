@@ -48,4 +48,13 @@ describe('resolvePillAction', () => {
       'showSeasonChart',
     );
   });
+
+  test('returns showMonthlyChangeTable for matching func or key', () => {
+    expect(resolvePillAction({ key: 'monthly-change-stats', name: 'Stats' })).toBe(
+      'showMonthlyChangeTable',
+    );
+    expect(resolvePillAction({ key: 'x', name: 'X', func: 'showMonthlyChangeTable' })).toBe(
+      'showMonthlyChangeTable',
+    );
+  });
 });

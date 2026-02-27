@@ -14,6 +14,7 @@ export const siteConfig = {
     filters: `${publicUrl}/data/filters.json`,
     chartDataPositions: `${apiBaseUrl}/data/futures/positions`,
     chartDataPrice: `${apiBaseUrl}/data/futures/price`,
+    monthlyChangeStats: `${apiBaseUrl}/data/futures/monthly-change`,
   },
   layout: {
     siderWidth: 220,

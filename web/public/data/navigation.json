@@ -24,6 +24,12 @@
       "func": "showSeasonChart"
     },
     {
+      "key": "monthly-change-stats",
+      "name": "涨跌统计",
+      "nameKey": "pill.monthlyChangeStats",
+      "func": "showMonthlyChangeTable"
+    },
+    {
       "key": "spread-positions",
       "name": "价差持仓",
       "nameKey": "pill.spreadPositions",

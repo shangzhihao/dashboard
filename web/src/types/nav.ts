@@ -5,4 +5,4 @@ export type NavItem = {
   func?: string;
 };
 
-export type PillFunc = 'showSeasonChart' | 'comingSoon';
+export type PillFunc = 'showSeasonChart' | 'showMonthlyChangeTable' | 'comingSoon';
