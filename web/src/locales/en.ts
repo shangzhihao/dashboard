@@ -1,7 +1,7 @@
 const en = {
   translation: {
     brand: {
-      title: 'Home',
+      title: 'Futures Trading',
     },
     search: {
       placeholder: 'Search',

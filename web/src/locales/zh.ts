@@ -1,7 +1,7 @@
 const zh = {
   translation: {
     brand: {
-      title: '首页',
+      title: '期货交易',
     },
     search: {
       placeholder: '搜索',
