@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getClientLanguage, normalizeLanguage } from './i18n';
 import { siteConfig } from './config/site';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('i18n helpers', () => {
   it('normalizes supported languages and falls back', () => {
@@ -36,5 +40,19 @@ describe('i18n helpers', () => {
       value: originalStorage,
       configurable: true,
     });
+  });
+
+  it('prefers zh when browser language is zh and no stored value exists', () => {
+    window.localStorage.removeItem(siteConfig.language.storageKey);
+    vi.spyOn(window.navigator, 'language', 'get').mockReturnValue('zh-CN');
+
+    expect(getClientLanguage()).toBe('zh');
+  });
+
+  it('falls back to en when browser language is not zh and no stored value exists', () => {
+    window.localStorage.removeItem(siteConfig.language.storageKey);
+    vi.spyOn(window.navigator, 'language', 'get').mockReturnValue('fr-FR');
+
+    expect(getClientLanguage()).toBe('en');
   });
 });

@@ -3,8 +3,8 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:800
 
 export const siteConfig = {
   language: {
-    default: 'zh',
-    fallback: 'zh',
+    default: 'en',
+    fallback: 'en',
     storageKey: 'dashboard.language',
     supported: ['zh', 'en'],
   },
