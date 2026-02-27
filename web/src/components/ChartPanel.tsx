@@ -14,6 +14,7 @@ import {
   YAxis,
 } from 'recharts';
 import type { DefaultLegendContentProps } from 'recharts';
+import { normalizeLanguage } from '../i18n';
 import type {
   ChartAxesConfig,
   ChartDatum,
@@ -91,6 +92,8 @@ const ChartPanel = ({
   onMetricChange,
 }: ChartPanelProps) => {
   const { t, i18n } = useTranslation();
+  const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
+  const toggleText = language === 'en' ? '中' : 'EN';
   const [hiddenSeriesKeys, setHiddenSeriesKeys] = useState<Set<string>>(new Set());
 
   const resolvedSeries = useMemo(
@@ -270,6 +273,7 @@ const ChartPanel = ({
                 dataKey="date"
                 tick={{ fill: '#7a8199', fontSize: 11 }}
                 minTickGap={16}
+                interval="preserveStartEnd"
                 tickFormatter={formatMonthDay}
               />
               <YAxis
@@ -337,6 +341,14 @@ const ChartPanel = ({
 
       <div className="panel-footer">
         {t('footer.copyright', { yearStart: 2018, yearEnd: 2026 })}
+        {' '}
+        <button
+          type="button"
+          className="footer-lang-toggle"
+          onClick={() => i18n.changeLanguage(language === 'en' ? 'zh' : 'en')}
+        >
+          {toggleText}
+        </button>
       </div>
     </Card>
   );

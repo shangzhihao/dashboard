@@ -325,12 +325,14 @@ def seasonal_chart_payload(metric: str, category: str, contract: str) -> dict[st
     if not series:
         raise HTTPException(status_code=404, detail="No seasonal series for request")
 
+    start_day = f"{contract}-01"
+    by_date.setdefault(start_day, {"date": start_day})
+
     items = [
         by_date[day]
         for day in sorted(
             by_date,
             key=lambda day: month_day_sort_key(day, contract_month),
-            reverse=True,
         )
     ]
     axis_label = "价格" if metric == "price" else "持仓(手)"

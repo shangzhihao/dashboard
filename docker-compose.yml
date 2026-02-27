@@ -1,7 +1,7 @@
 services:
   background:
     image: ${BACKGROUND_IMAGE:-futures-background:latest}
-    pull_policy: always
+    pull_policy: missing
     build:
       context: .
       dockerfile: api/Dockerfile
@@ -13,7 +13,7 @@ services:
 
   frontend:
     image: ${FRONTEND_IMAGE:-futures-frontend:latest}
-    pull_policy: always
+    pull_policy: missing
     build:
       context: ./web
       dockerfile: Dockerfile

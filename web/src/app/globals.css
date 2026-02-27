@@ -175,22 +175,6 @@ code {
   height: 100%;
 }
 
-.search {
-  width: 220px;
-  background: rgba(255, 255, 255, 0.18);
-  border: none;
-  color: #ffffff;
-}
-
-.search input {
-  background: transparent;
-  color: #ffffff;
-}
-
-.search input::placeholder {
-  color: rgba(255, 255, 255, 0.75);
-}
-
 .avatar {
   width: 32px;
   height: 32px;
@@ -424,6 +408,19 @@ code {
   text-align: center;
 }
 
+.footer-lang-toggle {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.footer-lang-toggle:hover {
+  color: var(--text);
+}
+
 @media (max-width: 1024px) {
   .app-shell {
     flex-direction: column;
@@ -445,10 +442,6 @@ code {
 @media (max-width: 768px) {
   .top-menu {
     display: none;
-  }
-
-  .search {
-    width: 150px;
   }
 
   .chart-wrap {
