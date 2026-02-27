@@ -408,6 +408,19 @@ code {
   text-align: center;
 }
 
+.footer-lang-toggle {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.footer-lang-toggle:hover {
+  color: var(--text);
+}
+
 @media (max-width: 1024px) {
   .app-shell {
     flex-direction: column;

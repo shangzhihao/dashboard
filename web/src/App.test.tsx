@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import i18n from './i18n';
 import './i18n';
 import App from './App';
@@ -121,5 +121,10 @@ describe('App', () => {
       expect(screen.getByRole('heading', { name: 'Spot' })).toBeTruthy();
     });
     expect(screen.getByText('Coming soon')).toBeTruthy();
+    const languageToggle = screen.getByRole('button', { name: '中' });
+    fireEvent.click(languageToggle);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'EN' })).toBeTruthy();
+    });
   });
 });
