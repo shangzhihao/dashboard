@@ -1,6 +1,6 @@
 import { Card, Select, Space, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { getNumberLocale } from '../i18n';
+import { getNumberLocale, normalizeLanguage } from '../i18n';
 import type { MonthlyChangeRow } from '../types/monthlyChange';
 
 const { Title } = Typography;
@@ -36,6 +36,8 @@ const MonthlyChangePanel = ({
   onContractChange,
 }: MonthlyChangePanelProps) => {
   const { t, i18n } = useTranslation();
+  const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
+  const toggleText = language === 'en' ? '中' : 'EN';
   const formatter = new Intl.NumberFormat(getNumberLocale(i18n.language), {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
@@ -94,6 +96,17 @@ const MonthlyChangePanel = ({
       </div>
 
       <div className="monthly-change-note">{t('stats.monthlyChange.note')}</div>
+      <div className="panel-footer">
+        {t('footer.copyright', { yearStart: 2018, yearEnd: 2026 })}
+        {' '}
+        <button
+          type="button"
+          className="footer-lang-toggle"
+          onClick={() => i18n.changeLanguage(language === 'en' ? 'zh' : 'en')}
+        >
+          {toggleText}
+        </button>
+      </div>
     </Card>
   );
 };
