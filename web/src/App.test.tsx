@@ -84,7 +84,7 @@ describe('App', () => {
     render(<App />);
 
     expect(await screen.findByText('Oil Current Price')).toBeTruthy();
-    expect(screen.getByPlaceholderText('Search')).toBeTruthy();
+    expect(screen.queryByPlaceholderText('Search')).toBeNull();
   });
 
   it('renders Coming Soon panel when non-futures top nav is active', async () => {

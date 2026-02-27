@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Input, Layout } from 'antd';
+import { Layout } from 'antd';
 import { useTranslation } from 'react-i18next';
 import ChartPanel from './components/ChartPanel';
 import ComingSoonPanel from './components/ComingSoonPanel';
@@ -205,7 +205,6 @@ function App() {
           <TopNav items={topNav} activeKey={activeTopKey} onChange={setActiveTopKey} />
         </div>
         <div className="header-right">
-          <Input className="search" placeholder={t('search.placeholder')} />
           <div className="avatar">{user.avatarText}</div>
         </div>
       </Header>
