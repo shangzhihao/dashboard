@@ -3,6 +3,7 @@ import { Layout } from 'antd';
 import { useTranslation } from 'react-i18next';
 import ChartPanel from './components/ChartPanel';
 import ComingSoonPanel from './components/ComingSoonPanel';
+import MonthlyChangePanel from './components/MonthlyChangePanel';
 import PillNav from './components/PillNav';
 import SideMenu from './components/SideMenu';
 import TopNav from './components/TopNav';
@@ -10,6 +11,7 @@ import { siteConfig } from './config/site';
 import { useCategories } from './hooks/useCategories';
 import { useChartData } from './hooks/useChartData';
 import { useFilters } from './hooks/useFilters';
+import { useMonthlyChangeData } from './hooks/useMonthlyChangeData';
 import { useNavigation } from './hooks/useNavigation';
 import type { NavItem, PillFunc } from './types/nav';
 import { resolvePillAction } from './utils/nav';
@@ -63,6 +65,8 @@ function App() {
   const [currentContractKey, setCurrentContractKey] = useState('');
 
   const isFuturesView = activeTopKey === 'futures' || activeTopKey === '';
+  const isSeasonalChartView = activePillView === 'showSeasonChart';
+  const isMonthlyChangeView = activePillView === 'showMonthlyChangeTable';
 
   useEffect(() => {
     setCurrentContractKey(getCurrentContractKey());
@@ -137,7 +141,7 @@ function App() {
   }, [activeContractKeys, contractValue, currentContractKey, metricType]);
 
   const chartDataUrl = useMemo(() => {
-    if (activePillView !== 'showSeasonChart') {
+    if (!isSeasonalChartView) {
       return '';
     }
     if (!activeCategoryKey || !metricType || !contractValue) {
@@ -149,9 +153,21 @@ function App() {
         ? dataUrls.chartDataPrice
         : dataUrls.chartDataPositions;
     return `${baseUrl}/${activeCategoryKey}/${apiContract}.json`;
-  }, [activeCategoryKey, activePillView, contractValue, metricType]);
+  }, [activeCategoryKey, contractValue, isSeasonalChartView, metricType]);
+
+  const monthlyChangeDataUrl = useMemo(() => {
+    if (!isMonthlyChangeView) {
+      return '';
+    }
+    if (!activeCategoryKey || !contractValue) {
+      return '';
+    }
+    const apiContract = toApiContract(contractValue);
+    return `${dataUrls.monthlyChangeStats}/${activeCategoryKey}/${apiContract}.json`;
+  }, [activeCategoryKey, contractValue, isMonthlyChangeView]);
 
   const { chartData, chartSeries, chartAxes, chartTitles } = useChartData(chartDataUrl);
+  const { rows: monthlyChangeRows } = useMonthlyChangeData(monthlyChangeDataUrl);
 
   const activeCategoryLabel = categoryLabelMap[activeCategoryKey] || t('common.feature');
   const activeContractLabel = contractLabelMap[contractValue] || contractValue;
@@ -194,6 +210,15 @@ function App() {
     [chartAxes, displayAxisLabel],
   );
 
+  const monthlyChangeTitle = useMemo(
+    () =>
+      t('stats.monthlyChange.title', {
+        category: activeCategoryLabel,
+        contract: toApiContract(contractValue) || activeContractLabel,
+      }),
+    [activeCategoryLabel, activeContractLabel, contractValue, t],
+  );
+
   return (
     <Layout className="app-layout">
       <Header className="app-header">
@@ -226,7 +251,7 @@ function App() {
             <Content className="app-content">
               <PillNav items={pillNav} activeKey={activePillKey} onClick={handlePillClick} />
 
-              {activePillView === 'showSeasonChart' ? (
+              {isSeasonalChartView ? (
                 <ChartPanel
                   chartData={chartData}
                   chartSeries={chartSeries}
@@ -238,6 +263,14 @@ function App() {
                   metricValue={metricType}
                   onContractChange={setContractValue}
                   onMetricChange={(value) => setMetricType(value)}
+                />
+              ) : isMonthlyChangeView ? (
+                <MonthlyChangePanel
+                  title={monthlyChangeTitle}
+                  rows={monthlyChangeRows}
+                  contractOptions={activeContractOptions}
+                  contractValue={contractValue}
+                  onContractChange={setContractValue}
                 />
               ) : (
                 <ComingSoonPanel title={activePillName} />

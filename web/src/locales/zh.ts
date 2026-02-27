@@ -1,7 +1,7 @@
 const zh = {
   translation: {
     brand: {
-      title: '首页',
+      title: '期货交易',
     },
     search: {
       placeholder: '搜索',
@@ -16,6 +16,7 @@ const zh = {
     },
     pill: {
       seasonalAnalysis: '季节性分析',
+      monthlyChangeStats: '涨跌统计',
       positionsLeaderboard: '持仓龙虎榜',
       seatTracking: '席位追踪',
       netPositions: '持仓净量',
@@ -98,6 +99,27 @@ const zh = {
       metric: {
         price: '价格',
         positions: '持仓',
+      },
+    },
+    stats: {
+      monthlyChange: {
+        title: '{{category}}/{{contract}} 期货涨跌统计',
+        year: '年份',
+        note: '注: 涨跌幅 = （月收盘价 - 月开盘价）/ 月开盘价 x 100%',
+        months: {
+          m01: '1月',
+          m02: '2月',
+          m03: '3月',
+          m04: '4月',
+          m05: '5月',
+          m06: '6月',
+          m07: '7月',
+          m08: '8月',
+          m09: '9月',
+          m10: '10月',
+          m11: '11月',
+          m12: '12月',
+        },
       },
     },
     common: {

@@ -29,3 +29,10 @@ yarn-error.log*
 
 # pnpm local store
 .pnpm-store
+# terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+*.tfvars.json

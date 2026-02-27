@@ -3,8 +3,8 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:800
 
 export const siteConfig = {
   language: {
-    default: 'zh',
-    fallback: 'zh',
+    default: 'en',
+    fallback: 'en',
     storageKey: 'dashboard.language',
     supported: ['zh', 'en'],
   },
@@ -14,6 +14,7 @@ export const siteConfig = {
     filters: `${publicUrl}/data/filters.json`,
     chartDataPositions: `${apiBaseUrl}/data/futures/positions`,
     chartDataPrice: `${apiBaseUrl}/data/futures/price`,
+    monthlyChangeStats: `${apiBaseUrl}/data/futures/monthly-change`,
   },
   layout: {
     siderWidth: 220,

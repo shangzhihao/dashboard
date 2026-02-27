@@ -10,6 +10,10 @@ vi.mock('./components/ChartPanel', () => ({
   ),
 }));
 
+vi.mock('./components/MonthlyChangePanel', () => ({
+  default: ({ title }: { title: string }) => <div>{title}</div>,
+}));
+
 const mockFetch = (handlers: Array<[string, unknown]>) => {
   vi.stubGlobal(
     'fetch',
@@ -126,5 +130,60 @@ describe('App', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'EN' })).toBeTruthy();
     });
+  });
+
+  it('renders monthly change stats table view when pill is active', async () => {
+    await i18n.changeLanguage('en');
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+    const currentContract = `c${currentMonth}`;
+    mockFetch([
+      [
+        '/data/categories.json',
+        [
+          {
+            key: 'energy',
+            label: 'Energy',
+            children: [{ key: 'oil', label: 'Oil' }],
+          },
+        ],
+      ],
+      [
+        '/data/filters.json',
+        {
+          metrics: [
+            { key: 'price', label: 'Price', contractKeys: [currentContract] },
+          ],
+          contracts: [{ key: currentContract, label: 'Current' }],
+          defaultMetric: 'price',
+        },
+      ],
+      [
+        '/data/navigation.json',
+        {
+          topNav: [{ key: 'futures', nameKey: 'nav.futures' }],
+          pillNav: [
+            {
+              key: 'monthly-change-stats',
+              nameKey: 'pill.monthlyChangeStats',
+              func: 'showMonthlyChangeTable',
+            },
+          ],
+          activeTop: 'futures',
+          activePill: 'monthly-change-stats',
+        },
+      ],
+      [
+        `/data/futures/monthly-change/oil/${currentMonth}.json`,
+        {
+          items: [{ year: '24', m01: 1.2, m02: -0.8 }],
+        },
+      ],
+    ]);
+
+    render(<App />);
+
+    expect(
+      await screen.findByText(`Oil/${currentMonth} Futures Monthly Change Stats`),
+    ).toBeTruthy();
   });
 });

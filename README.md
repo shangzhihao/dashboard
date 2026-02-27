@@ -49,6 +49,11 @@ If Python 3.11 is not present, `uv` will download and use a compatible interpret
 
 Open API docs at `http://127.0.0.1:8000/docs`.
 
+Chart data endpoints include:
+
+- Seasonal line chart: `/data/futures/{metric}/{category}/{contract}.json`
+- Monthly change stats table: `/data/futures/monthly-change/{category}/{contract}.json`
+
 ## Launch Both (Local Dev)
 
 ```bash

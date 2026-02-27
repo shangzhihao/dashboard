@@ -401,6 +401,68 @@ code {
   padding: 60px 16px;
 }
 
+.monthly-change-wrap {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: auto;
+  background: #ffffff;
+}
+
+.monthly-change-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 960px;
+}
+
+.monthly-change-table th,
+.monthly-change-table td {
+  border: 1px solid #e5e8f1;
+  text-align: center;
+  padding: 10px 8px;
+  font-size: 13px;
+}
+
+.monthly-change-table th {
+  background: #f3f4f8;
+  color: #6d7488;
+  font-weight: 700;
+}
+
+.monthly-change-year {
+  background: #f8f9fc;
+  font-weight: 700;
+  color: #596074;
+}
+
+.monthly-change-cell {
+  font-weight: 600;
+}
+
+.monthly-change-cell.is-up {
+  background: #cb3a3a;
+  color: #ffffff;
+}
+
+.monthly-change-cell.is-down {
+  background: #5452d9;
+  color: #ffffff;
+}
+
+.monthly-change-cell.is-empty {
+  background: #d8d5df;
+  color: #858a99;
+}
+
+.monthly-change-note {
+  margin-top: 10px;
+  padding: 12px 10px;
+  border-left: 4px solid #5d58e8;
+  background: #f5f6fa;
+  color: #555b6b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .panel-footer {
   margin-top: 16px;
   font-size: 11px;
