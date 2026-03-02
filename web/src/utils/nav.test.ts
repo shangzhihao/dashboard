@@ -57,4 +57,13 @@ describe('resolvePillAction', () => {
       'showMonthlyChangeTable',
     );
   });
+
+  test('returns showTermStructure for matching func or key', () => {
+    expect(resolvePillAction({ key: 'term-structure', name: 'Term Structure' })).toBe(
+      'showTermStructure',
+    );
+    expect(resolvePillAction({ key: 'x', name: 'X', func: 'showTermStructure' })).toBe(
+      'showTermStructure',
+    );
+  });
 });

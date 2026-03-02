@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from bisect import bisect_right
 from calendar import monthrange
 from datetime import date
 from datetime import datetime
+from datetime import timedelta
 from functools import lru_cache
 import json
 from pathlib import Path
@@ -12,6 +14,7 @@ from typing import Any
 
 from fastapi import FastAPI
 from fastapi import HTTPException
+from fastapi import Query
 from fastapi.middleware.cors import CORSMiddleware
 import pyarrow.compute as pc
 import pyarrow.parquet as pq
@@ -50,6 +53,15 @@ SERIES_COLORS: tuple[str, ...] = (
     "#0077c8",
     "#008eaa",
     "#949483",
+)
+
+TERM_STRUCTURE_LOOKBACKS: tuple[tuple[str, str, str, int], ...] = (
+    ("t0", "Today", "chart.termStructure.series.today", 0),
+    ("t1w", "1W Ago", "chart.termStructure.series.weekAgo", 7),
+    ("t1m", "1M Ago", "chart.termStructure.series.monthAgo", 30),
+    ("t3m", "3M Ago", "chart.termStructure.series.threeMonthsAgo", 90),
+    ("t6m", "6M Ago", "chart.termStructure.series.sixMonthsAgo", 180),
+    ("t1y", "1Y Ago", "chart.termStructure.series.yearAgo", 365),
 )
 
 app = FastAPI(
@@ -237,6 +249,170 @@ def month_day_sort_key(value: str, start_month: int) -> tuple[int, int]:
     return (season_month_index, day)
 
 
+def float_or_none(value: Any) -> float | None:
+    """Convert unknown value to float."""
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not (parsed == parsed):  # NaN
+        return None
+    return parsed
+
+
+def item_price_rows(item: str) -> list[dict[str, Any]]:
+    """Return normalized close-price rows for one item across all contracts."""
+    table = futures_table()
+    filtered = table.filter(pc.equal(table["item"], item))
+    if filtered.num_rows == 0:
+        raise HTTPException(status_code=404, detail="No data for category")
+
+    rows: list[dict[str, Any]] = []
+    for year_raw, month_raw, eob_raw, close_raw in zip(
+        filtered["year"].to_pylist(),
+        filtered["month"].to_pylist(),
+        filtered["eob"].to_pylist(),
+        filtered["close"].to_pylist(),
+    ):
+        if year_raw is None or month_raw is None:
+            continue
+        try:
+            contract_year = int(str(year_raw))
+            contract_month = int(str(month_raw))
+        except ValueError:
+            continue
+        if contract_month < 1 or contract_month > 12:
+            continue
+        trading_day = parse_eob_date(eob_raw)
+        close_value = float_or_none(close_raw)
+        if trading_day is None or close_value is None:
+            continue
+        rows.append(
+            {
+                "year": contract_year,
+                "month": contract_month,
+                "eob": trading_day,
+                "close": close_value,
+            }
+        )
+
+    if not rows:
+        raise HTTPException(status_code=404, detail="No valid rows after normalization")
+    return rows
+
+
+def rows_by_date(rows: list[dict[str, Any]]) -> dict[date, list[dict[str, Any]]]:
+    """Group normalized rows by trading date."""
+    grouped: dict[date, list[dict[str, Any]]] = {}
+    for row in rows:
+        grouped.setdefault(row["eob"], []).append(row)
+    return grouped
+
+
+def nearest_available_date(sorted_dates: list[date], target: date) -> date | None:
+    """Find nearest available trading date <= target."""
+    index = bisect_right(sorted_dates, target) - 1
+    if index < 0:
+        return None
+    return sorted_dates[index]
+
+
+def add_months(year: int, month: int, delta: int) -> tuple[int, int]:
+    """Shift one year-month tuple by delta months."""
+    zero_based = (year * 12 + (month - 1)) + delta
+    next_year = zero_based // 12
+    next_month = zero_based % 12 + 1
+    return next_year, next_month
+
+
+def resolve_front_contract(
+    contracts: list[tuple[int, int]],
+    reference_date: date,
+) -> tuple[int, int]:
+    """Resolve the front contract (near) for one reference date."""
+    if not contracts:
+        raise HTTPException(status_code=404, detail="No contracts on reference date")
+    current_month = (reference_date.year, reference_date.month)
+    for contract in contracts:
+        if contract >= current_month:
+            return contract
+    return contracts[0]
+
+
+def term_structure_payload(category: str, query_date: date | None) -> dict[str, object]:
+    """Build term-structure chart payload using one query date anchor."""
+    rows = item_price_rows(category)
+    grouped = rows_by_date(rows)
+    available_dates = sorted(grouped)
+    if not available_dates:
+        raise HTTPException(status_code=404, detail="No data for term structure")
+
+    if query_date is None:
+        anchor_date = available_dates[-1]
+    else:
+        matched = nearest_available_date(available_dates, query_date)
+        if matched is None:
+            raise HTTPException(status_code=404, detail="No term structure data on or before date")
+        anchor_date = matched
+
+    items: list[dict[str, object]] = [
+        {"date": "near"},
+        *({"date": f"n{offset}"} for offset in range(1, 12)),
+    ]
+    series: list[dict[str, object]] = []
+
+    for index, (series_key, label, label_key, lookback_days) in enumerate(TERM_STRUCTURE_LOOKBACKS):
+        target_date = anchor_date - timedelta(days=lookback_days)
+        reference_date = nearest_available_date(available_dates, target_date)
+        if reference_date is None:
+            continue
+
+        date_rows = grouped.get(reference_date, [])
+        if not date_rows:
+            continue
+
+        value_map = {
+            (entry["year"], entry["month"]): entry["close"]
+            for entry in date_rows
+        }
+        sorted_contracts = sorted(value_map)
+        near_year, near_month = resolve_front_contract(sorted_contracts, reference_date)
+
+        has_value = False
+        for offset, row in enumerate(items):
+            target_year, target_month = add_months(near_year, near_month, offset)
+            value = value_map.get((target_year, target_month))
+            if value is None:
+                continue
+            row[series_key] = round(float(value), 4)
+            has_value = True
+
+        if not has_value:
+            continue
+
+        series.append(
+            {
+                "key": series_key,
+                "label": label,
+                "labelKey": label_key,
+                "type": "line",
+                "yAxisId": "left",
+                "color": SERIES_COLORS[index % len(SERIES_COLORS)],
+                "strokeWidth": 2,
+            }
+        )
+
+    if not series:
+        raise HTTPException(status_code=404, detail="No term structure curves for request")
+
+    return {
+        "axes": {"left": {"label": "价格", "labelKey": "chart.axes.left.price"}},
+        "series": series,
+        "items": items,
+        "meta": {"date": anchor_date.isoformat()},
+    }
+
+
 def matching_rows(metric: str, category: str, contract: str) -> list[dict[str, Any]]:
     """Load and normalize rows for one item + contract-month."""
     table = futures_table()
@@ -413,6 +589,12 @@ def cached_monthly_change_payload(category: str, contract: str) -> dict[str, obj
     return monthly_change_payload(category, contract)
 
 
+@lru_cache(maxsize=8192)
+def cached_term_structure_payload(category: str, query_date: date | None) -> dict[str, object]:
+    """Generate and cache term structure payload."""
+    return term_structure_payload(category, query_date)
+
+
 @app.get("/health")
 async def health() -> dict[str, str]:
     """Health check endpoint used by local/dev environments."""
@@ -426,6 +608,17 @@ async def futures_monthly_change(category: str, contract: str) -> dict[str, obje
         raise HTTPException(status_code=404, detail="Unknown category")
     contract_month_value(contract)
     return cached_monthly_change_payload(category, contract)
+
+
+@app.get("/data/futures/term-structure/{category}.json")
+async def futures_term_structure(
+    category: str,
+    query_date: date | None = Query(default=None, alias="date"),
+) -> dict[str, object]:
+    """Return term-structure chart payload by category and query date."""
+    if category not in valid_categories():
+        raise HTTPException(status_code=404, detail="Unknown category")
+    return cached_term_structure_payload(category, query_date)
 
 
 @app.get("/data/futures/{metric}/{category}/{contract}.json")

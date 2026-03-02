@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import type { DefaultLegendContentProps } from 'recharts';
 import { normalizeLanguage } from '../i18n';
+import type { ReactNode } from 'react';
 import type {
   ChartAxesConfig,
   ChartDatum,
@@ -37,6 +38,7 @@ type ChartPanelProps = {
   metricValue: string;
   onContractChange: (value: string) => void;
   onMetricChange: (value: string) => void;
+  controls?: ReactNode;
 };
 
 const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
@@ -61,24 +63,6 @@ const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
   );
 };
 
-const formatMonthDay = (value: string | number) => {
-  const text = String(value);
-  if (/^\d{2}-\d{2}$/.test(text)) {
-    return text;
-  }
-  const match = text.match(/^\d{4}-(\d{2})-(\d{2})/);
-  if (match) {
-    return `${match[1]}-${match[2]}`;
-  }
-  const parsed = new Date(text);
-  if (Number.isNaN(parsed.getTime())) {
-    return text;
-  }
-  const month = String(parsed.getMonth() + 1).padStart(2, '0');
-  const day = String(parsed.getDate()).padStart(2, '0');
-  return `${month}-${day}`;
-};
-
 const ChartPanel = ({
   chartData,
   chartSeries,
@@ -90,6 +74,7 @@ const ChartPanel = ({
   metricValue,
   onContractChange,
   onMetricChange,
+  controls,
 }: ChartPanelProps) => {
   const { t, i18n } = useTranslation();
   const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
@@ -124,6 +109,30 @@ const ChartPanel = ({
     chartAxes.left?.label,
     'chart.axes.left.label',
   );
+  const formatXAxisTick = (value: string | number) => {
+    const text = String(value);
+    if (text === 'near') {
+      return t('chart.termStructure.near');
+    }
+    const nextMatch = text.match(/^n(\d{1,2})$/);
+    if (nextMatch) {
+      return t('chart.termStructure.next', { count: nextMatch[1] });
+    }
+    if (/^\d{2}-\d{2}$/.test(text)) {
+      return text;
+    }
+    const match = text.match(/^\d{4}-(\d{2})-(\d{2})/);
+    if (match) {
+      return `${match[1]}-${match[2]}`;
+    }
+    const parsed = new Date(text);
+    if (Number.isNaN(parsed.getTime())) {
+      return text;
+    }
+    const month = String(parsed.getMonth() + 1).padStart(2, '0');
+    const day = String(parsed.getDate()).padStart(2, '0');
+    return `${month}-${day}`;
+  };
   const chartTitle = resolveText(
     chartTitles.chartKey,
     chartTitles.chart,
@@ -220,18 +229,23 @@ const ChartPanel = ({
           {chartTitle}
         </Title>
         <Space wrap>
-          <Select
-            className="filter"
-            value={contractValue}
-            onChange={onContractChange}
-            options={contractOptions}
-          />
-          <Select
-            className="filter"
-            value={metricValue}
-            onChange={onMetricChange}
-            options={metricOptions}
-          />
+          {contractOptions.length > 0 ? (
+            <Select
+              className="filter"
+              value={contractValue}
+              onChange={onContractChange}
+              options={contractOptions}
+            />
+          ) : null}
+          {metricOptions.length > 0 ? (
+            <Select
+              className="filter"
+              value={metricValue}
+              onChange={onMetricChange}
+              options={metricOptions}
+            />
+          ) : null}
+          {controls}
         </Space>
       </div>
 
@@ -274,7 +288,7 @@ const ChartPanel = ({
                 tick={{ fill: '#7a8199', fontSize: 11 }}
                 minTickGap={16}
                 interval="preserveStartEnd"
-                tickFormatter={formatMonthDay}
+                tickFormatter={formatXAxisTick}
               />
               <YAxis
                 yAxisId="left"
@@ -332,7 +346,7 @@ const ChartPanel = ({
                 height={24}
                 stroke="#6d63f3"
                 travellerWidth={10}
-                tickFormatter={formatMonthDay}
+                tickFormatter={formatXAxisTick}
               />
             </ComposedChart>
           </ResponsiveContainer>
