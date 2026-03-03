@@ -39,7 +39,7 @@
       "key": "term-structure",
       "name": "期限结构",
       "nameKey": "pill.termStructure",
-      "func": "comingSoon"
+      "func": "showTermStructure"
     },
     {
       "key": "calendar-arbitrage",

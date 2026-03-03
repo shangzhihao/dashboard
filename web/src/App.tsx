@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Layout } from 'antd';
+import { Button, DatePicker, Layout } from 'antd';
+import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import ChartPanel from './components/ChartPanel';
 import ComingSoonPanel from './components/ComingSoonPanel';
@@ -24,6 +25,8 @@ const getCurrentContractKey = () => {
   const month = String(new Date().getMonth() + 1).padStart(2, '0');
   return `c${month}`;
 };
+
+const getTodayIsoDate = () => dayjs().format('YYYY-MM-DD');
 
 const toApiContract = (contract: string) => {
   if (/^c\d{2}$/.test(contract)) {
@@ -63,10 +66,13 @@ function App() {
   const [metricType, setMetricType] = useState('');
   const [contractValue, setContractValue] = useState('');
   const [currentContractKey, setCurrentContractKey] = useState('');
+  const [termStructureDateInput, setTermStructureDateInput] = useState(getTodayIsoDate);
+  const [termStructureDateApplied, setTermStructureDateApplied] = useState(getTodayIsoDate);
 
   const isFuturesView = activeTopKey === 'futures' || activeTopKey === '';
   const isSeasonalChartView = activePillView === 'showSeasonChart';
   const isMonthlyChangeView = activePillView === 'showMonthlyChangeTable';
+  const isTermStructureView = activePillView === 'showTermStructure';
 
   useEffect(() => {
     setCurrentContractKey(getCurrentContractKey());
@@ -141,10 +147,22 @@ function App() {
   }, [activeContractKeys, contractValue, currentContractKey, metricType]);
 
   const chartDataUrl = useMemo(() => {
-    if (!isSeasonalChartView) {
+    if (!isSeasonalChartView && !isTermStructureView) {
       return '';
     }
-    if (!activeCategoryKey || !metricType || !contractValue) {
+    if (!activeCategoryKey) {
+      return '';
+    }
+    if (isTermStructureView) {
+      if (!termStructureDateApplied) {
+        return '';
+      }
+      return `${dataUrls.termStructure}/${activeCategoryKey}.json?date=${termStructureDateApplied}`;
+    }
+    if (!contractValue) {
+      return '';
+    }
+    if (!metricType) {
       return '';
     }
     const apiContract = toApiContract(contractValue);
@@ -153,7 +171,14 @@ function App() {
         ? dataUrls.chartDataPrice
         : dataUrls.chartDataPositions;
     return `${baseUrl}/${activeCategoryKey}/${apiContract}.json`;
-  }, [activeCategoryKey, contractValue, isSeasonalChartView, metricType]);
+  }, [
+    activeCategoryKey,
+    contractValue,
+    isSeasonalChartView,
+    isTermStructureView,
+    metricType,
+    termStructureDateApplied,
+  ]);
 
   const monthlyChangeDataUrl = useMemo(() => {
     if (!isMonthlyChangeView) {
@@ -171,22 +196,31 @@ function App() {
 
   const activeCategoryLabel = categoryLabelMap[activeCategoryKey] || t('common.feature');
   const activeContractLabel = contractLabelMap[contractValue] || contractValue;
-  const activeMetricLabel = metricLabelMap[metricType] || metricType;
+  const effectiveMetricType = isTermStructureView ? 'price' : metricType;
+  const activeMetricLabel = metricLabelMap[effectiveMetricType] || effectiveMetricType;
 
   const displayChartTitle = useMemo(
-    () =>
-      [activeCategoryLabel, activeContractLabel, activeMetricLabel]
-        .filter(Boolean)
-        .join(' '),
-    [activeCategoryLabel, activeContractLabel, activeMetricLabel],
+    () => {
+      if (isTermStructureView) {
+        return [activeCategoryLabel, activePillName].filter(Boolean).join(' ');
+      }
+      return [activeCategoryLabel, activeContractLabel, activeMetricLabel].filter(Boolean).join(' ');
+    },
+    [
+      activeCategoryLabel,
+      activeContractLabel,
+      activeMetricLabel,
+      activePillName,
+      isTermStructureView,
+    ],
   );
 
   const displayAxisLabel = useMemo(
     () =>
-      metricType === 'price'
+      effectiveMetricType === 'price'
         ? t('chart.axes.left.price')
         : t('chart.axes.left.positions'),
-    [metricType, t],
+    [effectiveMetricType, t],
   );
 
   const displayChartTitles = useMemo(
@@ -251,18 +285,51 @@ function App() {
             <Content className="app-content">
               <PillNav items={pillNav} activeKey={activePillKey} onClick={handlePillClick} />
 
-              {isSeasonalChartView ? (
+              {isSeasonalChartView || isTermStructureView ? (
                 <ChartPanel
                   chartData={chartData}
                   chartSeries={chartSeries}
                   chartAxes={displayChartAxes}
                   chartTitles={displayChartTitles}
-                  contractOptions={activeContractOptions}
-                  contractValue={contractValue}
-                  metricOptions={metricOptions}
-                  metricValue={metricType}
+                  contractOptions={isTermStructureView ? [] : activeContractOptions}
+                  contractValue={isTermStructureView ? '' : contractValue}
+                  metricOptions={
+                    isTermStructureView
+                      ? []
+                      : metricOptions
+                  }
+                  metricValue={effectiveMetricType}
                   onContractChange={setContractValue}
-                  onMetricChange={(value) => setMetricType(value)}
+                  onMetricChange={(value) => {
+                    if (!isTermStructureView) {
+                      setMetricType(value);
+                    }
+                  }}
+                  controls={
+                    isTermStructureView ? (
+                      <>
+                        <DatePicker
+                          className="filter"
+                          allowClear={false}
+                          value={dayjs(termStructureDateInput)}
+                          onChange={(value) => {
+                            if (!value) {
+                              return;
+                            }
+                            setTermStructureDateInput(value.format('YYYY-MM-DD'));
+                          }}
+                        />
+                        <Button
+                          type="primary"
+                          onClick={() => {
+                            setTermStructureDateApplied(termStructureDateInput);
+                          }}
+                        >
+                          {t('common.query')}
+                        </Button>
+                      </>
+                    ) : undefined
+                  }
                 />
               ) : isMonthlyChangeView ? (
                 <MonthlyChangePanel

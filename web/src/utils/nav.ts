@@ -46,6 +46,10 @@ export const resolvePillAction = (item?: NavItem): PillFunc => {
     return 'showMonthlyChangeTable';
   }
 
+  if (item.func === 'showTermStructure' || item.key === 'term-structure') {
+    return 'showTermStructure';
+  }
+
   if (item.func === 'comingSoon') {
     return 'comingSoon';
   }

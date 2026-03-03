@@ -79,6 +79,18 @@ const en = {
         short: 'Short Positions',
         price: 'Price',
       },
+      termStructure: {
+        near: 'Near',
+        next: 'N{{count}}',
+        series: {
+          today: 'Today',
+          weekAgo: '1W Ago',
+          monthAgo: '1M Ago',
+          threeMonthsAgo: '3M Ago',
+          sixMonthsAgo: '6M Ago',
+          yearAgo: '1Y Ago',
+        },
+      },
     },
     filters: {
       contract: {
@@ -125,6 +137,7 @@ const en = {
     common: {
       comingSoon: 'Coming soon',
       feature: 'Feature',
+      query: 'Query',
     },
     footer: {
       copyright: 'Copyright © {{yearStart}} - {{yearEnd}} Futures Data Center',

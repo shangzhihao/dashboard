@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import dayjs from 'dayjs';
 import i18n from './i18n';
 import './i18n';
 import App from './App';
@@ -185,5 +186,63 @@ describe('App', () => {
     expect(
       await screen.findByText(`Oil/${currentMonth} Futures Monthly Change Stats`),
     ).toBeTruthy();
+  });
+
+  it('renders term structure view when pill is active', async () => {
+    await i18n.changeLanguage('en');
+    const queryDate = dayjs().format('YYYY-MM-DD');
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+    const currentContract = `c${currentMonth}`;
+    mockFetch([
+      [
+        '/data/categories.json',
+        [
+          {
+            key: 'energy',
+            label: 'Energy',
+            children: [{ key: 'oil', label: 'Oil' }],
+          },
+        ],
+      ],
+      [
+        '/data/filters.json',
+        {
+          metrics: [
+            { key: 'price', label: 'Price', contractKeys: [currentContract] },
+          ],
+          contracts: [{ key: currentContract, label: 'Current' }],
+          defaultMetric: 'price',
+        },
+      ],
+      [
+        '/data/navigation.json',
+        {
+          topNav: [{ key: 'futures', nameKey: 'nav.futures' }],
+          pillNav: [
+            {
+              key: 'term-structure',
+              nameKey: 'pill.termStructure',
+              func: 'showTermStructure',
+            },
+          ],
+          activeTop: 'futures',
+          activePill: 'term-structure',
+        },
+      ],
+      [
+        `/data/futures/term-structure/oil.json?date=${queryDate}`,
+        {
+          items: [{ date: 'near', t0: 10 }],
+          series: [{ key: 't0', label: 'Today', type: 'line', yAxisId: 'left' }],
+          axes: { left: { label: 'Price' } },
+          titles: { chart: 'Term Structure' },
+        },
+      ],
+    ]);
+
+    render(<App />);
+
+    expect(await screen.findByText('Oil Term Structure')).toBeTruthy();
+    expect(screen.queryByText('Coming soon')).toBeNull();
   });
 });

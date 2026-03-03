@@ -79,6 +79,18 @@ const zh = {
         short: '空头持仓',
         price: '价格',
       },
+      termStructure: {
+        near: '近月',
+        next: '连{{count}}',
+        series: {
+          today: '当日',
+          weekAgo: '一周前',
+          monthAgo: '一个月前',
+          threeMonthsAgo: '三个月前',
+          sixMonthsAgo: '六个月前',
+          yearAgo: '一年前',
+        },
+      },
     },
     filters: {
       contract: {
@@ -125,6 +137,7 @@ const zh = {
     common: {
       comingSoon: '敬请期待',
       feature: '功能',
+      query: '查询',
     },
     footer: {
       copyright: 'Copyright © {{yearStart}} - {{yearEnd}} 期货数据中心',
