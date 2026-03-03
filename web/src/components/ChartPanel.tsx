@@ -116,7 +116,7 @@ const ChartPanel = ({
     }
     const nextMatch = text.match(/^n(\d{1,2})$/);
     if (nextMatch) {
-      return t('chart.termStructure.next', { count: nextMatch[1] });
+      return t('chart.termStructure.next', { count: Number(nextMatch[1]) });
     }
     if (/^\d{2}-\d{2}$/.test(text)) {
       return text;
