@@ -52,7 +52,7 @@ Open API docs at `http://127.0.0.1:8000/docs`.
 Chart data endpoints include:
 
 - Seasonal line chart: `/data/futures/{metric}/{category}/{contract}.json`
-- Term structure chart: `/data/futures/term-structure/{category}.json?date=YYYY-MM-DD`
+- Term structure chart: `/data/futures/term-structure/{category}/{YYYY}/{MM}/{DD}.json`
 - Monthly change stats table: `/data/futures/monthly-change/{category}/{contract}.json`
 
 ## Launch Both (Local Dev)

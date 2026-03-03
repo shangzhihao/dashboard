@@ -35,6 +35,14 @@ const toApiContract = (contract: string) => {
   return contract;
 };
 
+const toTermStructureDatePath = (value: string) => {
+  const matched = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!matched) {
+    return '';
+  }
+  return `${matched[1]}/${matched[2]}/${matched[3]}`;
+};
+
 function App() {
   const { t } = useTranslation();
   const {
@@ -157,7 +165,11 @@ function App() {
       if (!termStructureDateApplied) {
         return '';
       }
-      return `${dataUrls.termStructure}/${activeCategoryKey}.json?date=${termStructureDateApplied}`;
+      const datePath = toTermStructureDatePath(termStructureDateApplied);
+      if (!datePath) {
+        return '';
+      }
+      return `${dataUrls.termStructure}/${activeCategoryKey}/${datePath}.json`;
     }
     if (!contractValue) {
       return '';

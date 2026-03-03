@@ -14,7 +14,6 @@ from typing import Any
 
 from fastapi import FastAPI
 from fastapi import HTTPException
-from fastapi import Query
 from fastapi.middleware.cors import CORSMiddleware
 import pyarrow.compute as pc
 import pyarrow.parquet as pq
@@ -339,7 +338,7 @@ def resolve_front_contract(
     return contracts[0]
 
 
-def term_structure_payload(category: str, query_date: date | None) -> dict[str, object]:
+def term_structure_payload(category: str, query_date: date) -> dict[str, object]:
     """Build term-structure chart payload using one query date anchor."""
     rows = item_price_rows(category)
     grouped = rows_by_date(rows)
@@ -347,13 +346,10 @@ def term_structure_payload(category: str, query_date: date | None) -> dict[str, 
     if not available_dates:
         raise HTTPException(status_code=404, detail="No data for term structure")
 
-    if query_date is None:
-        anchor_date = available_dates[-1]
-    else:
-        matched = nearest_available_date(available_dates, query_date)
-        if matched is None:
-            raise HTTPException(status_code=404, detail="No term structure data on or before date")
-        anchor_date = matched
+    matched = nearest_available_date(available_dates, query_date)
+    if matched is None:
+        raise HTTPException(status_code=404, detail="No term structure data on or before date")
+    anchor_date = matched
 
     items: list[dict[str, object]] = [
         {"date": "near"},
@@ -590,7 +586,7 @@ def cached_monthly_change_payload(category: str, contract: str) -> dict[str, obj
 
 
 @lru_cache(maxsize=8192)
-def cached_term_structure_payload(category: str, query_date: date | None) -> dict[str, object]:
+def cached_term_structure_payload(category: str, query_date: date) -> dict[str, object]:
     """Generate and cache term structure payload."""
     return term_structure_payload(category, query_date)
 
@@ -610,14 +606,20 @@ async def futures_monthly_change(category: str, contract: str) -> dict[str, obje
     return cached_monthly_change_payload(category, contract)
 
 
-@app.get("/data/futures/term-structure/{category}.json")
+@app.get("/data/futures/term-structure/{category}/{year}/{month}/{day}.json")
 async def futures_term_structure(
     category: str,
-    query_date: date | None = Query(default=None, alias="date"),
+    year: int,
+    month: int,
+    day: int,
 ) -> dict[str, object]:
     """Return term-structure chart payload by category and query date."""
     if category not in valid_categories():
         raise HTTPException(status_code=404, detail="Unknown category")
+    try:
+        query_date = date(year, month, day)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Invalid date") from exc
     return cached_term_structure_payload(category, query_date)
 
 
