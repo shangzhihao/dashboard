@@ -191,6 +191,7 @@ describe('App', () => {
   it('renders term structure view when pill is active', async () => {
     await i18n.changeLanguage('en');
     const queryDate = dayjs().format('YYYY-MM-DD');
+    const queryDatePath = queryDate.replace(/-/g, '/');
     const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
     const currentContract = `c${currentMonth}`;
     mockFetch([
@@ -230,7 +231,7 @@ describe('App', () => {
         },
       ],
       [
-        `/data/futures/term-structure/oil.json?date=${queryDate}`,
+        `/data/futures/term-structure/oil/${queryDatePath}.json`,
         {
           items: [{ date: 'near', t0: 10 }],
           series: [{ key: 't0', label: 'Today', type: 'line', yAxisId: 'left' }],
