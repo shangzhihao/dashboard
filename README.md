@@ -2,6 +2,22 @@
 
 ![Dashboard UI](ui.png)
 
+This repository provides a full-stack futures analytics dashboard for exploring historical commodity contracts and spreads.
+
+It includes:
+
+- `web/`: a Next.js frontend with interactive filters, charts, and tables
+- `api/`: a FastAPI backend that reads parquet datasets and serves normalized JSON payloads
+- `data/`: source parquet files used for chart and table calculations
+
+The dashboard currently supports these core views:
+
+- Seasonal line chart by metric/category/contract month
+- Term structure comparison snapshots (today, 1W, 1M, 3M, 6M, 1Y)
+- Monthly change statistics table
+- Calendar spread chart (near vs. far contracts)
+- Inter-commodity spread chart (cross-category contract pair)
+
 ## Requirements
 
 For local development:
