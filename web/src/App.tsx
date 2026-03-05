@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button, DatePicker, Layout } from 'antd';
+import { Button, DatePicker, Layout, Select } from 'antd';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import ChartPanel from './components/ChartPanel';
@@ -43,6 +43,9 @@ const toTermStructureDatePath = (value: string) => {
   return `${matched[1]}/${matched[2]}/${matched[3]}`;
 };
 
+const resolveSecondContract = (contracts: string[], first: string) =>
+  contracts.find((contract) => contract !== first) || first;
+
 function App() {
   const { t } = useTranslation();
   const {
@@ -76,11 +79,16 @@ function App() {
   const [currentContractKey, setCurrentContractKey] = useState('');
   const [termStructureDateInput, setTermStructureDateInput] = useState(getTodayIsoDate);
   const [termStructureDateApplied, setTermStructureDateApplied] = useState(getTodayIsoDate);
+  const [calendarNearContractInput, setCalendarNearContractInput] = useState('');
+  const [calendarFarContractInput, setCalendarFarContractInput] = useState('');
+  const [calendarNearContractApplied, setCalendarNearContractApplied] = useState('');
+  const [calendarFarContractApplied, setCalendarFarContractApplied] = useState('');
 
   const isFuturesView = activeTopKey === 'futures' || activeTopKey === '';
   const isSeasonalChartView = activePillView === 'showSeasonChart';
   const isMonthlyChangeView = activePillView === 'showMonthlyChangeTable';
   const isTermStructureView = activePillView === 'showTermStructure';
+  const isCalendarSpreadView = activePillView === 'showCalendarSpread';
 
   useEffect(() => {
     setCurrentContractKey(getCurrentContractKey());
@@ -154,12 +162,49 @@ function App() {
     }
   }, [activeContractKeys, contractValue, currentContractKey, metricType]);
 
+  useEffect(() => {
+    if (activeContractKeys.length === 0) {
+      return;
+    }
+
+    const fallbackNear = activeContractKeys[0];
+    const fallbackFar = resolveSecondContract(activeContractKeys, fallbackNear);
+
+    if (!calendarNearContractInput || !activeContractKeys.includes(calendarNearContractInput)) {
+      setCalendarNearContractInput(fallbackNear);
+    }
+    if (!calendarNearContractApplied || !activeContractKeys.includes(calendarNearContractApplied)) {
+      setCalendarNearContractApplied(fallbackNear);
+    }
+
+    if (!calendarFarContractInput || !activeContractKeys.includes(calendarFarContractInput)) {
+      setCalendarFarContractInput(fallbackFar);
+    }
+    if (!calendarFarContractApplied || !activeContractKeys.includes(calendarFarContractApplied)) {
+      setCalendarFarContractApplied(fallbackFar);
+    }
+  }, [
+    activeContractKeys,
+    calendarFarContractApplied,
+    calendarFarContractInput,
+    calendarNearContractApplied,
+    calendarNearContractInput,
+  ]);
+
   const chartDataUrl = useMemo(() => {
-    if (!isSeasonalChartView && !isTermStructureView) {
+    if (!isSeasonalChartView && !isTermStructureView && !isCalendarSpreadView) {
       return '';
     }
     if (!activeCategoryKey) {
       return '';
+    }
+    if (isCalendarSpreadView) {
+      if (!calendarNearContractApplied || !calendarFarContractApplied) {
+        return '';
+      }
+      const nearContract = toApiContract(calendarNearContractApplied);
+      const farContract = toApiContract(calendarFarContractApplied);
+      return `${dataUrls.calendarSpread}/${activeCategoryKey}/${nearContract}/${farContract}.json`;
     }
     if (isTermStructureView) {
       if (!termStructureDateApplied) {
@@ -185,7 +230,10 @@ function App() {
     return `${baseUrl}/${activeCategoryKey}/${apiContract}.json`;
   }, [
     activeCategoryKey,
+    calendarFarContractApplied,
+    calendarNearContractApplied,
     contractValue,
+    isCalendarSpreadView,
     isSeasonalChartView,
     isTermStructureView,
     metricType,
@@ -208,7 +256,7 @@ function App() {
 
   const activeCategoryLabel = categoryLabelMap[activeCategoryKey] || t('common.feature');
   const activeContractLabel = contractLabelMap[contractValue] || contractValue;
-  const effectiveMetricType = isTermStructureView ? 'price' : metricType;
+  const effectiveMetricType = isTermStructureView || isCalendarSpreadView ? 'price' : metricType;
   const activeMetricLabel = metricLabelMap[effectiveMetricType] || effectiveMetricType;
 
   const displayChartTitle = useMemo(
@@ -216,13 +264,22 @@ function App() {
       if (isTermStructureView) {
         return [activeCategoryLabel, activePillName].filter(Boolean).join(' ');
       }
+      if (isCalendarSpreadView) {
+        const near = toApiContract(calendarNearContractApplied);
+        const far = toApiContract(calendarFarContractApplied);
+        const pair = near && far ? `${near}-${far}` : '';
+        return [activeCategoryLabel, pair, activePillName].filter(Boolean).join(' ');
+      }
       return [activeCategoryLabel, activeContractLabel, activeMetricLabel].filter(Boolean).join(' ');
     },
     [
       activeCategoryLabel,
       activeContractLabel,
-      activeMetricLabel,
       activePillName,
+      activeMetricLabel,
+      calendarFarContractApplied,
+      calendarNearContractApplied,
+      isCalendarSpreadView,
       isTermStructureView,
     ],
   );
@@ -297,23 +354,25 @@ function App() {
             <Content className="app-content">
               <PillNav items={pillNav} activeKey={activePillKey} onClick={handlePillClick} />
 
-              {isSeasonalChartView || isTermStructureView ? (
+              {isSeasonalChartView || isTermStructureView || isCalendarSpreadView ? (
                 <ChartPanel
                   chartData={chartData}
                   chartSeries={chartSeries}
                   chartAxes={displayChartAxes}
                   chartTitles={displayChartTitles}
-                  contractOptions={isTermStructureView ? [] : activeContractOptions}
-                  contractValue={isTermStructureView ? '' : contractValue}
+                  contractOptions={
+                    isTermStructureView || isCalendarSpreadView ? [] : activeContractOptions
+                  }
+                  contractValue={isTermStructureView || isCalendarSpreadView ? '' : contractValue}
                   metricOptions={
-                    isTermStructureView
+                    isTermStructureView || isCalendarSpreadView
                       ? []
                       : metricOptions
                   }
                   metricValue={effectiveMetricType}
                   onContractChange={setContractValue}
                   onMetricChange={(value) => {
-                    if (!isTermStructureView) {
+                    if (!isTermStructureView && !isCalendarSpreadView) {
                       setMetricType(value);
                     }
                   }}
@@ -335,6 +394,51 @@ function App() {
                           type="primary"
                           onClick={() => {
                             setTermStructureDateApplied(termStructureDateInput);
+                          }}
+                        >
+                          {t('common.query')}
+                        </Button>
+                      </>
+                    ) : isCalendarSpreadView ? (
+                      <>
+                        <Select
+                          className="filter"
+                          value={calendarNearContractInput}
+                          onChange={(value) => {
+                            setCalendarNearContractInput(value);
+                            if (value === calendarFarContractInput) {
+                              setCalendarFarContractInput(
+                                resolveSecondContract(activeContractKeys, value),
+                              );
+                            }
+                          }}
+                          options={activeContractOptions}
+                          placeholder={t('chart.calendarSpread.nearContract')}
+                        />
+                        <Select
+                          className="filter"
+                          value={calendarFarContractInput}
+                          onChange={(value) => {
+                            setCalendarFarContractInput(value);
+                            if (value === calendarNearContractInput) {
+                              setCalendarNearContractInput(
+                                resolveSecondContract(activeContractKeys, value),
+                              );
+                            }
+                          }}
+                          options={activeContractOptions}
+                          placeholder={t('chart.calendarSpread.farContract')}
+                        />
+                        <Button
+                          type="primary"
+                          disabled={
+                            !calendarNearContractInput ||
+                            !calendarFarContractInput ||
+                            calendarNearContractInput === calendarFarContractInput
+                          }
+                          onClick={() => {
+                            setCalendarNearContractApplied(calendarNearContractInput);
+                            setCalendarFarContractApplied(calendarFarContractInput);
                           }}
                         >
                           {t('common.query')}

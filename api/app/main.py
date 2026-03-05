@@ -324,6 +324,13 @@ def add_months(year: int, month: int, delta: int) -> tuple[int, int]:
     return next_year, next_month
 
 
+def spread_contract_year(reference_date: date, near_month: int) -> int:
+    """Resolve spread near-leg contract year for one trading date."""
+    if reference_date.month <= near_month:
+        return reference_date.year
+    return reference_date.year + 1
+
+
 def resolve_front_contract(
     contracts: list[tuple[int, int]],
     reference_date: date,
@@ -406,6 +413,84 @@ def term_structure_payload(category: str, query_date: date) -> dict[str, object]
         "series": series,
         "items": items,
         "meta": {"date": anchor_date.isoformat()},
+    }
+
+
+def calendar_spread_payload(
+    category: str,
+    near_contract: str,
+    far_contract: str,
+) -> dict[str, object]:
+    """Build rolling calendar spread payload for one category + contract pair."""
+    near_month = contract_month_value(near_contract)
+    far_month = contract_month_value(far_contract)
+    if near_contract == far_contract:
+        raise HTTPException(status_code=404, detail="Contracts must be different")
+
+    rows = item_price_rows(category)
+    grouped = rows_by_date(rows)
+    available_dates = sorted(grouped)
+    if not available_dates:
+        raise HTTPException(status_code=404, detail="No spread data")
+
+    items: list[dict[str, object]] = []
+    for trading_date in available_dates:
+        day_rows = grouped.get(trading_date, [])
+        if not day_rows:
+            continue
+
+        value_map = {(entry["year"], entry["month"]): entry["close"] for entry in day_rows}
+        near_year = spread_contract_year(trading_date, near_month)
+        far_year = near_year if far_month >= near_month else near_year + 1
+        near_value = value_map.get((near_year, near_month))
+        far_value = value_map.get((far_year, far_month))
+        if near_value is None or far_value is None:
+            continue
+
+        near_price = round(float(near_value), 4)
+        spread = round(float(near_value) - float(far_value), 4)
+        items.append(
+            {
+                "date": trading_date.isoformat(),
+                "near": near_price,
+                "spread": spread,
+            }
+        )
+
+    if not items:
+        raise HTTPException(status_code=404, detail="No spread rows for request")
+
+    return {
+        "axes": {
+            "left": {"label": "价格", "labelKey": "chart.axes.left.price"},
+            "right": {"label": "价差(元)", "labelKey": "chart.axes.right.spread"},
+        },
+        "series": [
+            {
+                "key": "near",
+                "label": f"{near_contract}合约收盘价",
+                "labelKey": "chart.calendarSpread.series.near",
+                "type": "line",
+                "yAxisId": "left",
+                "color": "#e84c4a",
+                "strokeWidth": 2,
+            },
+            {
+                "key": "spread",
+                "label": "价差",
+                "labelKey": "chart.calendarSpread.series.spread",
+                "type": "line",
+                "yAxisId": "right",
+                "color": "#34495e",
+                "strokeWidth": 2,
+            },
+        ],
+        "items": items,
+        "meta": {
+            "nearContract": near_contract,
+            "farContract": far_contract,
+            "formula": f"{near_contract}-{far_contract}",
+        },
     }
 
 
@@ -591,6 +676,16 @@ def cached_term_structure_payload(category: str, query_date: date) -> dict[str, 
     return term_structure_payload(category, query_date)
 
 
+@lru_cache(maxsize=8192)
+def cached_calendar_spread_payload(
+    category: str,
+    near_contract: str,
+    far_contract: str,
+) -> dict[str, object]:
+    """Generate and cache calendar spread payload."""
+    return calendar_spread_payload(category, near_contract, far_contract)
+
+
 @app.get("/health")
 async def health() -> dict[str, str]:
     """Health check endpoint used by local/dev environments."""
@@ -621,6 +716,20 @@ async def futures_term_structure(
     except ValueError as exc:
         raise HTTPException(status_code=404, detail="Invalid date") from exc
     return cached_term_structure_payload(category, query_date)
+
+
+@app.get("/data/futures/calendar-spread/{category}/{near_contract}/{far_contract}.json")
+async def futures_calendar_spread(
+    category: str,
+    near_contract: str,
+    far_contract: str,
+) -> dict[str, object]:
+    """Return rolling calendar spread chart payload by category and contract pair."""
+    if category not in valid_categories():
+        raise HTTPException(status_code=404, detail="Unknown category")
+    contract_month_value(near_contract)
+    contract_month_value(far_contract)
+    return cached_calendar_spread_payload(category, near_contract, far_contract)
 
 
 @app.get("/data/futures/{metric}/{category}/{contract}.json")

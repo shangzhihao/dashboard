@@ -72,6 +72,9 @@ const en = {
           price: 'Price',
           positions: 'Positions (lots)',
         },
+        right: {
+          spread: 'Spread',
+        },
       },
       series: {
         net: 'Net Positions',
@@ -89,6 +92,15 @@ const en = {
           threeMonthsAgo: '3M Ago',
           sixMonthsAgo: '6M Ago',
           yearAgo: '1Y Ago',
+        },
+      },
+      calendarSpread: {
+        nearContract: 'Near Contract',
+        farContract: 'Far Contract',
+        spread: 'Spread',
+        series: {
+          near: 'Near Contract Close',
+          spread: 'Spread',
         },
       },
     },

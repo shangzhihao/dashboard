@@ -50,6 +50,10 @@ export const resolvePillAction = (item?: NavItem): PillFunc => {
     return 'showTermStructure';
   }
 
+  if (item.func === 'showCalendarSpread' || item.key === 'calendar-arbitrage') {
+    return 'showCalendarSpread';
+  }
+
   if (item.func === 'comingSoon') {
     return 'comingSoon';
   }

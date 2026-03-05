@@ -16,6 +16,7 @@ export const siteConfig = {
     chartDataPrice: `${apiBaseUrl}/data/futures/price`,
     termStructure: `${apiBaseUrl}/data/futures/term-structure`,
     monthlyChangeStats: `${apiBaseUrl}/data/futures/monthly-change`,
+    calendarSpread: `${apiBaseUrl}/data/futures/calendar-spread`,
   },
   layout: {
     siderWidth: 220,

@@ -54,6 +54,7 @@ Chart data endpoints include:
 - Seasonal line chart: `/data/futures/{metric}/{category}/{contract}.json`
 - Term structure chart: `/data/futures/term-structure/{category}/{YYYY}/{MM}/{DD}.json`
 - Monthly change stats table: `/data/futures/monthly-change/{category}/{contract}.json`
+- Calendar spread chart: `/data/futures/calendar-spread/{category}/{nearContract}/{farContract}.json`
 
 ## Launch Both (Local Dev)
 
