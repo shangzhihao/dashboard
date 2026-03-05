@@ -1,5 +1,7 @@
 # Futures Dashboard Monorepo
 
+![Dashboard UI](ui.png)
+
 ## Requirements
 
 For local development:
