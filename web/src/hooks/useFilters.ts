@@ -32,14 +32,7 @@ const normalizeMetrics = (value: unknown): FilterMetric[] => {
       ? entry.contractKeys.filter((key): key is string => typeof key === 'string')
       : undefined;
 
-    return [
-      {
-        key: entry.key,
-        label,
-        labelKey,
-        contractKeys,
-      },
-    ];
+    return [{ key: entry.key, label, labelKey, contractKeys }];
   });
 };
 
@@ -55,14 +48,7 @@ const normalizeContracts = (value: unknown): FilterContract[] => {
 
     const label = typeof entry.label === 'string' ? entry.label : undefined;
     const labelKey = typeof entry.labelKey === 'string' ? entry.labelKey : undefined;
-
-    return [
-      {
-        key: entry.key,
-        label,
-        labelKey,
-      },
-    ];
+    return [{ key: entry.key, label, labelKey }];
   });
 };
 
@@ -81,9 +67,8 @@ const resolveLabel = (
   return fallback ?? '';
 };
 
-export const useFilters = (filtersUrl: string) => {
-  const { t } = useTranslation();
-  const loaded = useJsonResource({
+const useLoadedFilters = (filtersUrl: string) =>
+  useJsonResource({
     url: filtersUrl,
     emptyState: {
       metrics: [] as FilterMetric[],
@@ -92,40 +77,30 @@ export const useFilters = (filtersUrl: string) => {
     },
     errorPrefix: 'Failed to load filters',
     mapPayload: (payload) => {
-      const metricsPayload =
-        isRecord(payload) && Array.isArray(payload.metrics) ? payload.metrics : [];
-      const contractsPayload =
-        isRecord(payload) && Array.isArray(payload.contracts) ? payload.contracts : [];
+      const metricsPayload = isRecord(payload) && Array.isArray(payload.metrics) ? payload.metrics : [];
+      const contractsPayload = isRecord(payload) && Array.isArray(payload.contracts) ? payload.contracts : [];
       const defaultMetric =
-        isRecord(payload) && typeof payload.defaultMetric === 'string'
-          ? payload.defaultMetric
-          : '';
+        isRecord(payload) && typeof payload.defaultMetric === 'string' ? payload.defaultMetric : '';
       const nextMetrics = normalizeMetrics(metricsPayload);
-      const nextContracts = normalizeContracts(contractsPayload);
       return {
         metrics: nextMetrics,
-        contracts: nextContracts,
+        contracts: normalizeContracts(contractsPayload),
         defaultMetricKey: defaultMetric || nextMetrics[0]?.key || '',
       };
     },
   });
-  const { metrics, contracts, defaultMetricKey } = loaded;
+
+export const useFilters = (filtersUrl: string) => {
+  const { t } = useTranslation();
+  const { metrics, contracts, defaultMetricKey } = useLoadedFilters(filtersUrl);
 
   const metricOptions = useMemo(
-    () =>
-      metrics.map((metric) => ({
-        value: metric.key,
-        label: resolveLabel(t, metric.labelKey, metric.label, metric.key),
-      })),
+    () => metrics.map((metric) => ({ value: metric.key, label: resolveLabel(t, metric.labelKey, metric.label, metric.key) })),
     [metrics, t],
   );
 
   const contractOptions = useMemo(
-    () =>
-      contracts.map((contract) => ({
-        value: contract.key,
-        label: resolveLabel(t, contract.labelKey, contract.label, contract.key),
-      })),
+    () => contracts.map((contract) => ({ value: contract.key, label: resolveLabel(t, contract.labelKey, contract.label, contract.key) })),
     [contracts, t],
   );
 

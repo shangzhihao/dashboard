@@ -28,6 +28,65 @@ const monthKeys = [
   'm12',
 ] as const;
 
+type ChangeCellProps = {
+  rowYear: string;
+  monthKey: (typeof monthKeys)[number];
+  value: number | null;
+  formatter: Intl.NumberFormat;
+};
+
+const ChangeCell = ({ rowYear, monthKey, value, formatter }: ChangeCellProps) => {
+  if (value === null) {
+    return (
+      <td key={`${rowYear}-${monthKey}`} className="monthly-change-cell is-empty">
+        -
+      </td>
+    );
+  }
+
+  const variant = value >= 0 ? 'is-up' : 'is-down';
+  return (
+    <td key={`${rowYear}-${monthKey}`} className={`monthly-change-cell ${variant}`}>
+      {formatter.format(value)}%
+    </td>
+  );
+};
+
+type MonthlyChangeTableProps = {
+  rows: MonthlyChangeRow[];
+  translate: (key: string) => string;
+  formatter: Intl.NumberFormat;
+};
+
+const MonthlyChangeTable = ({ rows, translate, formatter }: MonthlyChangeTableProps) => (
+  <table className="monthly-change-table">
+    <thead>
+      <tr>
+        <th>{translate('stats.monthlyChange.year')}</th>
+        {monthKeys.map((key) => (
+          <th key={key}>{translate(`stats.monthlyChange.months.${key}`)}</th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row) => (
+        <tr key={row.year}>
+          <td className="monthly-change-year">{row.year}</td>
+          {monthKeys.map((monthKey) => (
+            <ChangeCell
+              key={`${row.year}-${monthKey}`}
+              rowYear={row.year}
+              monthKey={monthKey}
+              value={row[monthKey]}
+              formatter={formatter}
+            />
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
+
 const MonthlyChangePanel = ({
   title,
   rows,
@@ -50,55 +109,17 @@ const MonthlyChangePanel = ({
           {title}
         </Title>
         <Space wrap>
-          <Select
-            className="filter"
-            value={contractValue}
-            onChange={onContractChange}
-            options={contractOptions}
-          />
+          <Select className="filter" value={contractValue} onChange={onContractChange} options={contractOptions} />
         </Space>
       </div>
 
       <div className="monthly-change-wrap">
-        <table className="monthly-change-table">
-          <thead>
-            <tr>
-              <th>{t('stats.monthlyChange.year')}</th>
-              {monthKeys.map((key) => (
-                <th key={key}>{t(`stats.monthlyChange.months.${key}`)}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.year}>
-                <td className="monthly-change-year">{row.year}</td>
-                {monthKeys.map((key) => {
-                  const value = row[key];
-                  if (value === null) {
-                    return (
-                      <td key={`${row.year}-${key}`} className="monthly-change-cell is-empty">
-                        -
-                      </td>
-                    );
-                  }
-                  const variant = value >= 0 ? 'is-up' : 'is-down';
-                  return (
-                    <td key={`${row.year}-${key}`} className={`monthly-change-cell ${variant}`}>
-                      {formatter.format(value)}%
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <MonthlyChangeTable rows={rows} translate={t} formatter={formatter} />
       </div>
 
       <div className="monthly-change-note">{t('stats.monthlyChange.note')}</div>
       <div className="panel-footer">
-        {t('footer.copyright', { yearStart: 2018, yearEnd: 2026 })}
-        {' '}
+        {t('footer.copyright', { yearStart: 2018, yearEnd: 2026 })}{' '}
         <button
           type="button"
           className="footer-lang-toggle"
