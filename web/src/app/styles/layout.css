@@ -1,0 +1,220 @@
+.app-layout {
+  min-height: 100vh;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.app-layout::before,
+.app-layout::after {
+  content: '';
+  position: fixed;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  opacity: 0.2;
+  z-index: 0;
+}
+
+.app-layout::before {
+  top: -200px;
+  right: -180px;
+  background: radial-gradient(circle, rgba(111, 104, 241, 0.55), rgba(111, 104, 241, 0));
+}
+
+.app-layout::after {
+  bottom: -220px;
+  left: -180px;
+  background: radial-gradient(circle, rgba(47, 182, 212, 0.4), rgba(47, 182, 212, 0));
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  height: 60px;
+  padding: 0 22px;
+  padding-inline: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, #5a52e8 0%, #6b62f0 45%, #5e57e6 100%);
+  box-shadow: 0 8px 20px rgba(63, 55, 165, 0.35);
+}
+
+.ant-layout-header.app-header {
+  height: 60px;
+  line-height: normal;
+  padding: 0 22px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+}
+
+.logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--primary);
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+}
+
+.brand-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.top-menu {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  color: #ffffff;
+  border-bottom: none;
+  min-width: 360px;
+}
+
+.top-menu .ant-menu-item {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 10px;
+  margin: 0 6px;
+  padding: 0 12px;
+  height: 36px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.top-menu .ant-menu-item-selected {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.top-menu .ant-menu-item-selected .ant-menu-title-content {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.top-menu.ant-menu-horizontal > .ant-menu-item:not(.ant-menu-item-selected):hover,
+.top-menu.ant-menu-horizontal > .ant-menu-item:not(.ant-menu-item-selected).ant-menu-item-active {
+  background: rgba(0, 0, 0, 0.18) !important;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.top-menu.ant-menu-horizontal
+  > .ant-menu-item:not(.ant-menu-item-selected):hover
+  .ant-menu-title-content,
+.top-menu.ant-menu-horizontal
+  > .ant-menu-item:not(.ant-menu-item-selected).ant-menu-item-active
+  .ant-menu-title-content {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.top-menu.ant-menu-horizontal > .ant-menu-item::after,
+.top-menu.ant-menu-horizontal > .ant-menu-submenu::after {
+  border-bottom: none;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ffd166;
+  color: #1f2430;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.app-shell {
+  height: calc(100vh - 60px);
+  padding: 18px 22px 40px;
+  gap: 18px;
+  background: transparent;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.app-sider {
+  background: var(--panel) !important;
+  border-radius: 16px;
+  padding: 16px 0;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-sider .ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.side-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0 16px 12px;
+}
+
+.side-menu {
+  border-right: none;
+  background: transparent;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.side-menu .ant-menu-submenu-title {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.side-menu .ant-menu-item {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.side-menu .ant-menu-item-selected {
+  background: rgba(47, 182, 212, 0.12);
+  color: var(--accent);
+}
+
+.app-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  overflow-y: auto;
+}

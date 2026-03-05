@@ -1,0 +1,27 @@
+@media (max-width: 1024px) {
+  .app-shell {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 60px);
+    overflow: visible;
+  }
+
+  .app-sider {
+    width: 100% !important;
+    max-height: 40vh;
+  }
+
+  .app-content {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 768px) {
+  .top-menu {
+    display: none;
+  }
+
+  .chart-wrap {
+    height: 320px;
+  }
+}

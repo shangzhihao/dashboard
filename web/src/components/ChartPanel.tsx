@@ -14,6 +14,9 @@ import {
   YAxis,
 } from 'recharts';
 import type { DefaultLegendContentProps } from 'recharts';
+import ChartLegend from './chart/ChartLegend';
+import ChartTooltip from './chart/ChartTooltip';
+import { computeAxisDomain, formatXAxisTick, legendDimensions } from './chart/chartUtils';
 import { normalizeLanguage } from '../i18n';
 import type { ReactNode } from 'react';
 import type {
@@ -21,9 +24,8 @@ import type {
   ChartDatum,
   ChartSeriesConfig,
   ChartTitlesConfig,
-  ChartTooltipProps,
 } from '../types/chart';
-import { axisTickFormatter, normalizeSeriesConfig, tooltipFormatter } from '../utils/chart';
+import { axisTickFormatter, normalizeSeriesConfig } from '../utils/chart';
 
 const { Title } = Typography;
 
@@ -41,62 +43,13 @@ type ChartPanelProps = {
   controls?: ReactNode;
 };
 
-const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
-  if (!active || !payload || payload.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="chart-tooltip">
-      <div className="chart-tooltip-title">{label}</div>
-      {payload.map((entry) => (
-        <div
-          key={String(entry.dataKey ?? entry.name ?? 'series')}
-          className="chart-tooltip-row"
-        >
-          <span className="dot" style={{ background: entry.color }} />
-          <span className="name">{entry.name}</span>
-          <span className="value">{tooltipFormatter(entry.value)}</span>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const computeAxisDomain = (
-  chartData: ChartDatum[],
-  visibleSeries: ReturnType<typeof normalizeSeriesConfig>,
-  axisId: 'left' | 'right',
+const handleChartClick = (
+  event: { activeLabel?: string | number; activePayload?: unknown } | null,
 ) => {
-  const values: number[] = [];
-  chartData.forEach((row) => {
-    visibleSeries
-      .filter((series) => series.yAxisId === axisId)
-      .forEach((series) => {
-        const raw = row[series.key];
-        const value =
-          typeof raw === 'number'
-            ? raw
-            : typeof raw === 'string'
-              ? Number(raw)
-              : NaN;
-        if (Number.isFinite(value)) {
-          values.push(value);
-        }
-      });
-  });
-
-  if (values.length === 0) {
-    return undefined;
+  if (!event || !event.activeLabel) {
+    return;
   }
-
-  const minValue = Math.min(...values);
-  const maxValue = Math.max(...values);
-  const range = maxValue - minValue;
-  const padding = range === 0 ? Math.max(Math.abs(maxValue) * 0.05, 1) : range * 0.08;
-  const nextMin = minValue - padding;
-  const nextMax = maxValue + padding;
-  return [nextMin, nextMax] as [number, number];
+  console.log('Chart click:', event.activeLabel, event.activePayload);
 };
 
 const ChartPanel = ({
@@ -140,6 +93,7 @@ const ChartPanel = ({
     return defaultKey ? t(defaultKey) : '';
   };
 
+  const chartTitle = resolveText(chartTitles.chartKey, chartTitles.chart, 'chart.titles.chart');
   const leftAxisLabel = resolveText(
     chartAxes.left?.labelKey,
     chartAxes.left?.label,
@@ -149,36 +103,6 @@ const ChartPanel = ({
     chartAxes.right?.labelKey,
     chartAxes.right?.label,
     'chart.axes.right.spread',
-  );
-  const formatXAxisTick = (value: string | number) => {
-    const text = String(value);
-    if (text === 'near') {
-      return t('chart.termStructure.near');
-    }
-    const nextMatch = text.match(/^n(\d{1,2})$/);
-    if (nextMatch) {
-      return t('chart.termStructure.next', { count: Number(nextMatch[1]) });
-    }
-    if (/^\d{2}-\d{2}$/.test(text)) {
-      return text;
-    }
-    const match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (match) {
-      return `${match[1]}-${match[2]}-${match[3]}`;
-    }
-    const parsed = new Date(text);
-    if (Number.isNaN(parsed.getTime())) {
-      return text;
-    }
-    const year = String(parsed.getFullYear());
-    const month = String(parsed.getMonth() + 1).padStart(2, '0');
-    const day = String(parsed.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-  const chartTitle = resolveText(
-    chartTitles.chartKey,
-    chartTitles.chart,
-    'chart.titles.chart',
   );
 
   const visibleSeries = useMemo(
@@ -194,6 +118,7 @@ const ChartPanel = ({
     () => computeAxisDomain(chartData, visibleSeries, 'right'),
     [chartData, visibleSeries],
   );
+
   const showRightAxis = useMemo(
     () =>
       visibleSeries.some((series) => series.yAxisId === 'right') ||
@@ -206,7 +131,14 @@ const ChartPanel = ({
     [i18n.language],
   );
 
-  const handleLegendToggle = (dataKey: string) => {
+  const xAxisTickFormatter = useMemo(
+    () => (value: string | number) => formatXAxisTick(value, t),
+    [t],
+  );
+
+  const { legendHeight, chartMinHeight } = legendDimensions(resolvedSeries.length);
+
+  const toggleSeries = (dataKey: string) => {
     setHiddenSeriesKeys((prev) => {
       const next = new Set(prev);
       if (next.has(dataKey)) {
@@ -218,36 +150,14 @@ const ChartPanel = ({
     });
   };
 
-  const renderLegend = (_props: DefaultLegendContentProps) => {
-    return (
-      <div className="chart-legend">
-        {resolvedSeries.map((series) => {
-          const label = series.labelKey ? t(series.labelKey) : series.label;
-          const isHidden = hiddenSeriesKeys.has(series.key);
-          const color = isHidden ? '#c2c6d6' : series.color || '#6d63f3';
-          return (
-            <button
-              key={series.key}
-              type="button"
-              className="chart-legend-item"
-              onClick={() => {
-                handleLegendToggle(series.key);
-              }}
-              style={{ color }}
-            >
-              <span className="chart-legend-dot" style={{ background: color }} />
-              {label}
-            </button>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // Reserve legend space by estimated rows so wrapped items never overlap chart content.
-  const legendRows = Math.max(1, Math.ceil(resolvedSeries.length / 13));
-  const legendHeight = 36 + (legendRows - 1) * 24;
-  const chartMinHeight = 320 + (legendRows - 1) * 24;
+  const renderLegend = (_props: DefaultLegendContentProps) => (
+    <ChartLegend
+      resolvedSeries={resolvedSeries}
+      hiddenSeriesKeys={hiddenSeriesKeys}
+      onToggle={toggleSeries}
+      translate={t}
+    />
+  );
 
   return (
     <Card className="panel" styles={{ body: { padding: 18 } }}>
@@ -288,14 +198,7 @@ const ChartPanel = ({
                 {visibleSeries
                   .filter((series) => series.type === 'area')
                   .map((series) => (
-                    <linearGradient
-                      key={series.key}
-                      id={`area-${series.key}`}
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient key={series.key} id={`area-${series.key}`} x1="0" y1="0" x2="0" y2="1">
                       <stop
                         offset="0%"
                         stopColor={series.color}
@@ -315,7 +218,7 @@ const ChartPanel = ({
                 tick={{ fill: '#7a8199', fontSize: 11 }}
                 minTickGap={16}
                 interval="preserveStartEnd"
-                tickFormatter={formatXAxisTick}
+                tickFormatter={xAxisTickFormatter}
               />
               <YAxis
                 yAxisId="left"
@@ -351,12 +254,7 @@ const ChartPanel = ({
                 />
               ) : null}
               <Tooltip content={<ChartTooltip />} />
-              <Legend
-                verticalAlign="top"
-                height={legendHeight}
-                iconType="circle"
-                content={renderLegend}
-              />
+              <Legend verticalAlign="top" height={legendHeight} iconType="circle" content={renderLegend} />
               {visibleSeries.map((series) => {
                 const seriesLabel = series.labelKey ? t(series.labelKey) : series.label;
 
@@ -391,7 +289,7 @@ const ChartPanel = ({
                 height={24}
                 stroke="#6d63f3"
                 travellerWidth={10}
-                tickFormatter={formatXAxisTick}
+                tickFormatter={xAxisTickFormatter}
               />
             </ComposedChart>
           </ResponsiveContainer>
@@ -399,8 +297,7 @@ const ChartPanel = ({
       </Card>
 
       <div className="panel-footer">
-        {t('footer.copyright', { yearStart: 2018, yearEnd: 2026 })}
-        {' '}
+        {t('footer.copyright', { yearStart: 2018, yearEnd: 2026 })}{' '}
         <button
           type="button"
           className="footer-lang-toggle"
@@ -411,15 +308,6 @@ const ChartPanel = ({
       </div>
     </Card>
   );
-};
-
-const handleChartClick = (
-  event: { activeLabel?: string | number; activePayload?: unknown } | null,
-) => {
-  if (!event || !event.activeLabel) {
-    return;
-  }
-  console.log('Chart click:', event.activeLabel, event.activePayload);
 };
 
 export default ChartPanel;
