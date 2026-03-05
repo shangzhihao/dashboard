@@ -14,6 +14,7 @@ import { useChartData } from './hooks/useChartData';
 import { useFilters } from './hooks/useFilters';
 import { useMonthlyChangeData } from './hooks/useMonthlyChangeData';
 import { useNavigation } from './hooks/useNavigation';
+import type { ChartSeriesConfig } from './types/chart';
 import type { NavItem, PillFunc } from './types/nav';
 import { resolvePillAction } from './utils/nav';
 
@@ -43,8 +44,8 @@ const toTermStructureDatePath = (value: string) => {
   return `${matched[1]}/${matched[2]}/${matched[3]}`;
 };
 
-const resolveSecondContract = (contracts: string[], first: string) =>
-  contracts.find((contract) => contract !== first) || first;
+const resolveSecondChoice = (choices: string[], first: string) =>
+  choices.find((choice) => choice !== first) || first;
 
 function App() {
   const { t } = useTranslation();
@@ -55,6 +56,7 @@ function App() {
     activeCategoryKey,
     setActiveCategoryKey,
     categoryLabelMap,
+    categoryOptions,
   } = useCategories(dataUrls.categories);
   const {
     metricOptions,
@@ -83,12 +85,23 @@ function App() {
   const [calendarFarContractInput, setCalendarFarContractInput] = useState('');
   const [calendarNearContractApplied, setCalendarNearContractApplied] = useState('');
   const [calendarFarContractApplied, setCalendarFarContractApplied] = useState('');
+  const [interCommodityLeftCategoryInput, setInterCommodityLeftCategoryInput] = useState('');
+  const [interCommodityRightCategoryInput, setInterCommodityRightCategoryInput] = useState('');
+  const [interCommodityLeftCategoryApplied, setInterCommodityLeftCategoryApplied] = useState('');
+  const [interCommodityRightCategoryApplied, setInterCommodityRightCategoryApplied] =
+    useState('');
+  const [interCommodityLeftContractInput, setInterCommodityLeftContractInput] = useState('');
+  const [interCommodityRightContractInput, setInterCommodityRightContractInput] = useState('');
+  const [interCommodityLeftContractApplied, setInterCommodityLeftContractApplied] = useState('');
+  const [interCommodityRightContractApplied, setInterCommodityRightContractApplied] =
+    useState('');
 
   const isFuturesView = activeTopKey === 'futures' || activeTopKey === '';
   const isSeasonalChartView = activePillView === 'showSeasonChart';
   const isMonthlyChangeView = activePillView === 'showMonthlyChangeTable';
   const isTermStructureView = activePillView === 'showTermStructure';
   const isCalendarSpreadView = activePillView === 'showCalendarSpread';
+  const isInterCommoditySpreadView = activePillView === 'showInterCommoditySpread';
 
   useEffect(() => {
     setCurrentContractKey(getCurrentContractKey());
@@ -168,7 +181,7 @@ function App() {
     }
 
     const fallbackNear = activeContractKeys[0];
-    const fallbackFar = resolveSecondContract(activeContractKeys, fallbackNear);
+    const fallbackFar = resolveSecondChoice(activeContractKeys, fallbackNear);
 
     if (!calendarNearContractInput || !activeContractKeys.includes(calendarNearContractInput)) {
       setCalendarNearContractInput(fallbackNear);
@@ -183,20 +196,108 @@ function App() {
     if (!calendarFarContractApplied || !activeContractKeys.includes(calendarFarContractApplied)) {
       setCalendarFarContractApplied(fallbackFar);
     }
+
+    if (!interCommodityLeftContractInput || !activeContractKeys.includes(interCommodityLeftContractInput)) {
+      setInterCommodityLeftContractInput(fallbackNear);
+    }
+    if (
+      !interCommodityLeftContractApplied ||
+      !activeContractKeys.includes(interCommodityLeftContractApplied)
+    ) {
+      setInterCommodityLeftContractApplied(fallbackNear);
+    }
+
+    if (!interCommodityRightContractInput || !activeContractKeys.includes(interCommodityRightContractInput)) {
+      setInterCommodityRightContractInput(fallbackNear);
+    }
+    if (
+      !interCommodityRightContractApplied ||
+      !activeContractKeys.includes(interCommodityRightContractApplied)
+    ) {
+      setInterCommodityRightContractApplied(fallbackNear);
+    }
   }, [
     activeContractKeys,
     calendarFarContractApplied,
     calendarFarContractInput,
     calendarNearContractApplied,
     calendarNearContractInput,
+    interCommodityLeftContractApplied,
+    interCommodityLeftContractInput,
+    interCommodityRightContractApplied,
+    interCommodityRightContractInput,
+  ]);
+
+  useEffect(() => {
+    if (categoryOptions.length === 0) {
+      return;
+    }
+
+    const categoryKeys = categoryOptions.map((option) => option.value);
+    const fallbackLeft =
+      activeCategoryKey && categoryKeys.includes(activeCategoryKey)
+        ? activeCategoryKey
+        : categoryKeys[0];
+    const fallbackRight = resolveSecondChoice(categoryKeys, fallbackLeft);
+
+    if (!interCommodityLeftCategoryInput || !categoryKeys.includes(interCommodityLeftCategoryInput)) {
+      setInterCommodityLeftCategoryInput(fallbackLeft);
+    }
+    if (
+      !interCommodityLeftCategoryApplied ||
+      !categoryKeys.includes(interCommodityLeftCategoryApplied)
+    ) {
+      setInterCommodityLeftCategoryApplied(fallbackLeft);
+    }
+
+    if (!interCommodityRightCategoryInput || !categoryKeys.includes(interCommodityRightCategoryInput)) {
+      setInterCommodityRightCategoryInput(fallbackRight);
+    }
+    if (
+      !interCommodityRightCategoryApplied ||
+      !categoryKeys.includes(interCommodityRightCategoryApplied)
+    ) {
+      setInterCommodityRightCategoryApplied(fallbackRight);
+    }
+  }, [
+    activeCategoryKey,
+    categoryOptions,
+    interCommodityLeftCategoryApplied,
+    interCommodityLeftCategoryInput,
+    interCommodityRightCategoryApplied,
+    interCommodityRightCategoryInput,
   ]);
 
   const chartDataUrl = useMemo(() => {
-    if (!isSeasonalChartView && !isTermStructureView && !isCalendarSpreadView) {
+    if (
+      !isSeasonalChartView &&
+      !isTermStructureView &&
+      !isCalendarSpreadView &&
+      !isInterCommoditySpreadView
+    ) {
       return '';
     }
-    if (!activeCategoryKey) {
+    if (!activeCategoryKey && !isInterCommoditySpreadView) {
       return '';
+    }
+    if (isInterCommoditySpreadView) {
+      if (
+        !interCommodityLeftCategoryApplied ||
+        !interCommodityRightCategoryApplied ||
+        !interCommodityLeftContractApplied ||
+        !interCommodityRightContractApplied
+      ) {
+        return '';
+      }
+      if (
+        interCommodityLeftCategoryApplied === interCommodityRightCategoryApplied &&
+        interCommodityLeftContractApplied === interCommodityRightContractApplied
+      ) {
+        return '';
+      }
+      const leftContract = toApiContract(interCommodityLeftContractApplied);
+      const rightContract = toApiContract(interCommodityRightContractApplied);
+      return `${dataUrls.interCommoditySpread}/${interCommodityLeftCategoryApplied}/${leftContract}/${interCommodityRightCategoryApplied}/${rightContract}.json`;
     }
     if (isCalendarSpreadView) {
       if (!calendarNearContractApplied || !calendarFarContractApplied) {
@@ -234,8 +335,13 @@ function App() {
     calendarNearContractApplied,
     contractValue,
     isCalendarSpreadView,
+    isInterCommoditySpreadView,
     isSeasonalChartView,
     isTermStructureView,
+    interCommodityLeftCategoryApplied,
+    interCommodityLeftContractApplied,
+    interCommodityRightCategoryApplied,
+    interCommodityRightContractApplied,
     metricType,
     termStructureDateApplied,
   ]);
@@ -258,6 +364,14 @@ function App() {
   const activeContractLabel = contractLabelMap[contractValue] || contractValue;
   const effectiveMetricType = isTermStructureView || isCalendarSpreadView ? 'price' : metricType;
   const activeMetricLabel = metricLabelMap[effectiveMetricType] || effectiveMetricType;
+  const categoryOptionLabelMap = useMemo(
+    () =>
+      categoryOptions.reduce<Record<string, string>>((map, option) => {
+        map[option.value] = option.label;
+        return map;
+      }, {}),
+    [categoryOptions],
+  );
 
   const displayChartTitle = useMemo(
     () => {
@@ -270,6 +384,22 @@ function App() {
         const pair = near && far ? `${near}-${far}` : '';
         return [activeCategoryLabel, pair, activePillName].filter(Boolean).join(' ');
       }
+      if (isInterCommoditySpreadView) {
+        const leftCategory =
+          categoryOptionLabelMap[interCommodityLeftCategoryApplied] ||
+          categoryLabelMap[interCommodityLeftCategoryApplied] ||
+          interCommodityLeftCategoryApplied;
+        const rightCategory =
+          categoryOptionLabelMap[interCommodityRightCategoryApplied] ||
+          categoryLabelMap[interCommodityRightCategoryApplied] ||
+          interCommodityRightCategoryApplied;
+        const leftContract = toApiContract(interCommodityLeftContractApplied);
+        const rightContract = toApiContract(interCommodityRightContractApplied);
+        const leftLeg = [leftCategory, leftContract].filter(Boolean).join(' ');
+        const rightLeg = [rightCategory, rightContract].filter(Boolean).join(' ');
+        const pair = [leftLeg, rightLeg].filter(Boolean).join(' - ');
+        return [pair, activePillName].filter(Boolean).join(' ');
+      }
       return [activeCategoryLabel, activeContractLabel, activeMetricLabel].filter(Boolean).join(' ');
     },
     [
@@ -279,8 +409,15 @@ function App() {
       activeMetricLabel,
       calendarFarContractApplied,
       calendarNearContractApplied,
+      categoryLabelMap,
+      categoryOptionLabelMap,
       isCalendarSpreadView,
+      isInterCommoditySpreadView,
       isTermStructureView,
+      interCommodityLeftCategoryApplied,
+      interCommodityLeftContractApplied,
+      interCommodityRightCategoryApplied,
+      interCommodityRightContractApplied,
     ],
   );
 
@@ -302,15 +439,77 @@ function App() {
   );
 
   const displayChartAxes = useMemo(
-    () => ({
-      ...chartAxes,
-      left: {
-        ...(chartAxes.left ?? {}),
-        label: displayAxisLabel,
-        labelKey: undefined,
-      },
-    }),
-    [chartAxes, displayAxisLabel],
+    () =>
+      isInterCommoditySpreadView
+        ? chartAxes
+        : {
+            ...chartAxes,
+            left: {
+              ...(chartAxes.left ?? {}),
+              label: displayAxisLabel,
+              labelKey: undefined,
+            },
+          },
+    [chartAxes, displayAxisLabel, isInterCommoditySpreadView],
+  );
+
+  const displayChartSeries = useMemo<ChartSeriesConfig[]>(
+    () => {
+      if (!isInterCommoditySpreadView) {
+        return chartSeries;
+      }
+      const leftLabel = [
+        categoryLabelMap[interCommodityLeftCategoryApplied] || interCommodityLeftCategoryApplied,
+        toApiContract(interCommodityLeftContractApplied),
+      ]
+        .filter(Boolean)
+        .join(' ');
+      const rightLabel = [
+        categoryLabelMap[interCommodityRightCategoryApplied] || interCommodityRightCategoryApplied,
+        toApiContract(interCommodityRightContractApplied),
+      ]
+        .filter(Boolean)
+        .join(' ');
+      const spreadSeries = chartSeries.find((series) => series.key === 'spread') ?? {
+        key: 'spread',
+        labelKey: 'chart.interCommoditySpread.series.spread',
+        type: 'line',
+        yAxisId: 'left',
+        color: '#c14a3f',
+        strokeWidth: 2,
+      };
+      return [
+        {
+          ...spreadSeries,
+          labelKey: 'chart.interCommoditySpread.series.spread',
+        },
+        {
+          key: 'left',
+          label: leftLabel,
+          type: 'line',
+          yAxisId: 'left',
+          color: '#f47b7b',
+          strokeWidth: 2,
+        },
+        {
+          key: 'right',
+          label: rightLabel,
+          type: 'line',
+          yAxisId: 'left',
+          color: '#9f1f5c',
+          strokeWidth: 2,
+        },
+      ];
+    },
+    [
+      categoryLabelMap,
+      chartSeries,
+      interCommodityLeftCategoryApplied,
+      interCommodityLeftContractApplied,
+      interCommodityRightCategoryApplied,
+      interCommodityRightContractApplied,
+      isInterCommoditySpreadView,
+    ],
   );
 
   const monthlyChangeTitle = useMemo(
@@ -321,6 +520,19 @@ function App() {
       }),
     [activeCategoryLabel, activeContractLabel, contractValue, t],
   );
+
+  const filterCategoryOption = (
+    input: string,
+    option?: { label?: string | number; searchText?: string },
+  ) => {
+    const keyword = input.trim().toLowerCase();
+    if (!keyword) {
+      return true;
+    }
+    const label = String(option?.label ?? '').toLowerCase();
+    const searchText = String(option?.searchText ?? '');
+    return label.includes(keyword) || searchText.includes(keyword);
+  };
 
   return (
     <Layout className="app-layout">
@@ -354,25 +566,38 @@ function App() {
             <Content className="app-content">
               <PillNav items={pillNav} activeKey={activePillKey} onClick={handlePillClick} />
 
-              {isSeasonalChartView || isTermStructureView || isCalendarSpreadView ? (
+              {isSeasonalChartView ||
+              isTermStructureView ||
+              isCalendarSpreadView ||
+              isInterCommoditySpreadView ? (
                 <ChartPanel
                   chartData={chartData}
-                  chartSeries={chartSeries}
+                  chartSeries={displayChartSeries}
                   chartAxes={displayChartAxes}
                   chartTitles={displayChartTitles}
                   contractOptions={
-                    isTermStructureView || isCalendarSpreadView ? [] : activeContractOptions
+                    isTermStructureView || isCalendarSpreadView || isInterCommoditySpreadView
+                      ? []
+                      : activeContractOptions
                   }
-                  contractValue={isTermStructureView || isCalendarSpreadView ? '' : contractValue}
+                  contractValue={
+                    isTermStructureView || isCalendarSpreadView || isInterCommoditySpreadView
+                      ? ''
+                      : contractValue
+                  }
                   metricOptions={
-                    isTermStructureView || isCalendarSpreadView
+                    isTermStructureView || isCalendarSpreadView || isInterCommoditySpreadView
                       ? []
                       : metricOptions
                   }
                   metricValue={effectiveMetricType}
                   onContractChange={setContractValue}
                   onMetricChange={(value) => {
-                    if (!isTermStructureView && !isCalendarSpreadView) {
+                    if (
+                      !isTermStructureView &&
+                      !isCalendarSpreadView &&
+                      !isInterCommoditySpreadView
+                    ) {
                       setMetricType(value);
                     }
                   }}
@@ -408,7 +633,7 @@ function App() {
                             setCalendarNearContractInput(value);
                             if (value === calendarFarContractInput) {
                               setCalendarFarContractInput(
-                                resolveSecondContract(activeContractKeys, value),
+                                resolveSecondChoice(activeContractKeys, value),
                               );
                             }
                           }}
@@ -422,7 +647,7 @@ function App() {
                             setCalendarFarContractInput(value);
                             if (value === calendarNearContractInput) {
                               setCalendarNearContractInput(
-                                resolveSecondContract(activeContractKeys, value),
+                                resolveSecondChoice(activeContractKeys, value),
                               );
                             }
                           }}
@@ -439,6 +664,83 @@ function App() {
                           onClick={() => {
                             setCalendarNearContractApplied(calendarNearContractInput);
                             setCalendarFarContractApplied(calendarFarContractInput);
+                          }}
+                        >
+                          {t('common.query')}
+                        </Button>
+                      </>
+                    ) : isInterCommoditySpreadView ? (
+                      <>
+                        <Select
+                          className="filter"
+                          showSearch
+                          optionFilterProp="label"
+                          filterOption={(input, option) =>
+                            filterCategoryOption(input, option as { label?: string; searchText?: string })
+                          }
+                          value={interCommodityLeftCategoryInput}
+                          onChange={(value) => {
+                            const categoryKeys = categoryOptions.map((option) => option.value);
+                            setInterCommodityLeftCategoryInput(value);
+                            setActiveCategoryKey(value);
+                            if (value === interCommodityRightCategoryInput) {
+                              setInterCommodityRightCategoryInput(
+                                resolveSecondChoice(categoryKeys, value),
+                              );
+                            }
+                          }}
+                          options={categoryOptions}
+                          placeholder={t('chart.interCommoditySpread.leftCategory')}
+                        />
+                        <Select
+                          className="filter"
+                          value={interCommodityLeftContractInput}
+                          onChange={setInterCommodityLeftContractInput}
+                          options={activeContractOptions}
+                          placeholder={t('chart.interCommoditySpread.leftContract')}
+                        />
+                        <Select
+                          className="filter"
+                          showSearch
+                          optionFilterProp="label"
+                          filterOption={(input, option) =>
+                            filterCategoryOption(input, option as { label?: string; searchText?: string })
+                          }
+                          value={interCommodityRightCategoryInput}
+                          onChange={(value) => {
+                            const categoryKeys = categoryOptions.map((option) => option.value);
+                            setInterCommodityRightCategoryInput(value);
+                            if (value === interCommodityLeftCategoryInput) {
+                              const fallbackLeft = resolveSecondChoice(categoryKeys, value);
+                              setInterCommodityLeftCategoryInput(fallbackLeft);
+                              setActiveCategoryKey(fallbackLeft);
+                            }
+                          }}
+                          options={categoryOptions}
+                          placeholder={t('chart.interCommoditySpread.rightCategory')}
+                        />
+                        <Select
+                          className="filter"
+                          value={interCommodityRightContractInput}
+                          onChange={setInterCommodityRightContractInput}
+                          options={activeContractOptions}
+                          placeholder={t('chart.interCommoditySpread.rightContract')}
+                        />
+                        <Button
+                          type="primary"
+                          disabled={
+                            !interCommodityLeftCategoryInput ||
+                            !interCommodityRightCategoryInput ||
+                            !interCommodityLeftContractInput ||
+                            !interCommodityRightContractInput ||
+                            (interCommodityLeftCategoryInput === interCommodityRightCategoryInput &&
+                              interCommodityLeftContractInput === interCommodityRightContractInput)
+                          }
+                          onClick={() => {
+                            setInterCommodityLeftCategoryApplied(interCommodityLeftCategoryInput);
+                            setInterCommodityRightCategoryApplied(interCommodityRightCategoryInput);
+                            setInterCommodityLeftContractApplied(interCommodityLeftContractInput);
+                            setInterCommodityRightContractApplied(interCommodityRightContractInput);
                           }}
                         >
                           {t('common.query')}

@@ -494,6 +494,83 @@ def calendar_spread_payload(
     }
 
 
+def contract_close_by_date(category: str, contract: str) -> dict[date, float]:
+    """Resolve one contract-month close series keyed by trading date."""
+    contract_month = contract_month_value(contract)
+    rows = item_price_rows(category)
+    grouped = rows_by_date(rows)
+
+    closes: dict[date, float] = {}
+    for trading_date in sorted(grouped):
+        day_rows = grouped.get(trading_date, [])
+        if not day_rows:
+            continue
+        value_map = {(entry["year"], entry["month"]): entry["close"] for entry in day_rows}
+        contract_year = spread_contract_year(trading_date, contract_month)
+        value = value_map.get((contract_year, contract_month))
+        if value is None:
+            continue
+        closes[trading_date] = round(float(value), 4)
+
+    if not closes:
+        raise HTTPException(status_code=404, detail="No rows for category/contract")
+    return closes
+
+
+def inter_commodity_spread_payload(
+    left_category: str,
+    left_contract: str,
+    right_category: str,
+    right_contract: str,
+) -> dict[str, object]:
+    """Build rolling spread payload for one inter-commodity contract pair."""
+    if left_category == right_category and left_contract == right_contract:
+        raise HTTPException(status_code=404, detail="Spread legs must be different")
+
+    left_closes = contract_close_by_date(left_category, left_contract)
+    right_closes = contract_close_by_date(right_category, right_contract)
+    common_dates = sorted(set(left_closes).intersection(right_closes))
+    if not common_dates:
+        raise HTTPException(status_code=404, detail="No overlapping spread rows for request")
+
+    items: list[dict[str, object]] = []
+    for trading_date in common_dates:
+        left_close = left_closes[trading_date]
+        right_close = right_closes[trading_date]
+        spread = round(left_close - right_close, 4)
+        items.append(
+            {
+                "date": trading_date.isoformat(),
+                "left": left_close,
+                "right": right_close,
+                "spread": spread,
+            }
+        )
+
+    return {
+        "axes": {"left": {"label": "价差(元)", "labelKey": "chart.axes.right.spread"}},
+        "series": [
+            {
+                "key": "spread",
+                "label": "价差",
+                "labelKey": "chart.interCommoditySpread.series.spread",
+                "type": "line",
+                "yAxisId": "left",
+                "color": "#c14a3f",
+                "strokeWidth": 2,
+            }
+        ],
+        "items": items,
+        "meta": {
+            "leftCategory": left_category,
+            "leftContract": left_contract,
+            "rightCategory": right_category,
+            "rightContract": right_contract,
+            "formula": f"{left_category}{left_contract}-{right_category}{right_contract}",
+        },
+    }
+
+
 def matching_rows(metric: str, category: str, contract: str) -> list[dict[str, Any]]:
     """Load and normalize rows for one item + contract-month."""
     table = futures_table()
@@ -686,6 +763,22 @@ def cached_calendar_spread_payload(
     return calendar_spread_payload(category, near_contract, far_contract)
 
 
+@lru_cache(maxsize=8192)
+def cached_inter_commodity_spread_payload(
+    left_category: str,
+    left_contract: str,
+    right_category: str,
+    right_contract: str,
+) -> dict[str, object]:
+    """Generate and cache inter-commodity spread payload."""
+    return inter_commodity_spread_payload(
+        left_category,
+        left_contract,
+        right_category,
+        right_contract,
+    )
+
+
 @app.get("/health")
 async def health() -> dict[str, str]:
     """Health check endpoint used by local/dev environments."""
@@ -730,6 +823,29 @@ async def futures_calendar_spread(
     contract_month_value(near_contract)
     contract_month_value(far_contract)
     return cached_calendar_spread_payload(category, near_contract, far_contract)
+
+
+@app.get(
+    "/data/futures/inter-commodity-spread/"
+    "{left_category}/{left_contract}/{right_category}/{right_contract}.json"
+)
+async def futures_inter_commodity_spread(
+    left_category: str,
+    left_contract: str,
+    right_category: str,
+    right_contract: str,
+) -> dict[str, object]:
+    """Return rolling inter-commodity spread chart payload by two legs."""
+    if left_category not in valid_categories() or right_category not in valid_categories():
+        raise HTTPException(status_code=404, detail="Unknown category")
+    contract_month_value(left_contract)
+    contract_month_value(right_contract)
+    return cached_inter_commodity_spread_payload(
+        left_category,
+        left_contract,
+        right_category,
+        right_contract,
+    )
 
 
 @app.get("/data/futures/{metric}/{category}/{contract}.json")

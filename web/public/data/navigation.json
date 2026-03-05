@@ -51,7 +51,7 @@
       "key": "inter-commodity-arbitrage",
       "name": "跨品种套利",
       "nameKey": "pill.interCommodityArbitrage",
-      "func": "comingSoon"
+      "func": "showInterCommoditySpread"
     },
     {
       "key": "more-coming",

@@ -75,4 +75,13 @@ describe('resolvePillAction', () => {
       'showCalendarSpread',
     );
   });
+
+  test('returns showInterCommoditySpread for matching func or key', () => {
+    expect(
+      resolvePillAction({ key: 'inter-commodity-arbitrage', name: 'Inter Commodity Arbitrage' }),
+    ).toBe('showInterCommoditySpread');
+    expect(resolvePillAction({ key: 'x', name: 'X', func: 'showInterCommoditySpread' })).toBe(
+      'showInterCommoditySpread',
+    );
+  });
 });

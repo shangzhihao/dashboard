@@ -12,6 +12,12 @@ type CategoryItem = {
   children?: CategoryItem[];
 };
 
+type CategoryOption = {
+  value: string;
+  label: string;
+  searchText: string;
+};
+
 type MenuItem = NonNullable<MenuProps['items']>[number];
 
 const normalizeCategoryItems = (value: unknown): CategoryItem[] => {
@@ -99,6 +105,29 @@ const buildLabelMap = (
   return map;
 };
 
+const collectLeafOptions = (
+  items: CategoryItem[],
+  translate: (key: string) => string,
+  language: 'zh' | 'en',
+  options: CategoryOption[] = [],
+): CategoryOption[] => {
+  items.forEach((item) => {
+    if (item.children && item.children.length > 0) {
+      collectLeafOptions(item.children, translate, language, options);
+      return;
+    }
+
+    const resolvedLabel = resolveLabel(item, translate, language);
+    const displayLabel = language === 'zh' ? `${resolvedLabel}/${item.key}` : `${resolvedLabel} / ${item.key}`;
+    options.push({
+      value: item.key,
+      label: displayLabel,
+      searchText: `${item.key} ${resolvedLabel} ${displayLabel}`.toLowerCase(),
+    });
+  });
+  return options;
+};
+
 const findFirstLeafKey = (items: CategoryItem[]): string => {
   for (const item of items) {
     if (item.children && item.children.length > 0) {
@@ -170,6 +199,10 @@ export const useCategories = (categoriesUrl: string) => {
     () => buildLabelMap(rawItems, t, language),
     [language, rawItems, t],
   );
+  const categoryOptions = useMemo(
+    () => collectLeafOptions(rawItems, t, language),
+    [language, rawItems, t],
+  );
 
   const setSideOpenKeys = useCallback(
     (keys: string[]) => {
@@ -195,5 +228,6 @@ export const useCategories = (categoriesUrl: string) => {
     activeCategoryKey,
     setActiveCategoryKey,
     categoryLabelMap,
+    categoryOptions,
   };
 };

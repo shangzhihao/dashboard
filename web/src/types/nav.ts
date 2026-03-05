@@ -10,4 +10,5 @@ export type PillFunc =
   | 'showMonthlyChangeTable'
   | 'showTermStructure'
   | 'showCalendarSpread'
+  | 'showInterCommoditySpread'
   | 'comingSoon';

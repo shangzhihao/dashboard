@@ -19,6 +19,7 @@ uv run uvicorn app.main:app --reload --port 8000
 - `GET /data/futures/term-structure/{category}/{YYYY}/{MM}/{DD}.json`
 - `GET /data/futures/monthly-change/{category}/{contract}.json`
 - `GET /data/futures/calendar-spread/{category}/{nearContract}/{farContract}.json`
+- `GET /data/futures/inter-commodity-spread/{leftCategory}/{leftContract}/{rightCategory}/{rightContract}.json`
 - `GET /docs` (Swagger UI)
 
 Chart payloads are generated dynamically from `data/futures.parquet`.

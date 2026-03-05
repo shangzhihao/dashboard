@@ -17,6 +17,7 @@ export const siteConfig = {
     termStructure: `${apiBaseUrl}/data/futures/term-structure`,
     monthlyChangeStats: `${apiBaseUrl}/data/futures/monthly-change`,
     calendarSpread: `${apiBaseUrl}/data/futures/calendar-spread`,
+    interCommoditySpread: `${apiBaseUrl}/data/futures/inter-commodity-spread`,
   },
   layout: {
     siderWidth: 220,

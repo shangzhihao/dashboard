@@ -103,6 +103,15 @@ const zh = {
           spread: '价差',
         },
       },
+      interCommoditySpread: {
+        leftCategory: '商品A',
+        leftContract: '合约A',
+        rightCategory: '商品B',
+        rightContract: '合约B',
+        series: {
+          spread: '价差',
+        },
+      },
     },
     filters: {
       contract: {

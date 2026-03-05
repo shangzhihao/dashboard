@@ -103,6 +103,15 @@ const en = {
           spread: 'Spread',
         },
       },
+      interCommoditySpread: {
+        leftCategory: 'Product A',
+        leftContract: 'Contract A',
+        rightCategory: 'Product B',
+        rightContract: 'Contract B',
+        series: {
+          spread: 'Spread',
+        },
+      },
     },
     filters: {
       contract: {

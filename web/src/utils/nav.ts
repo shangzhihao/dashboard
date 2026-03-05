@@ -54,6 +54,13 @@ export const resolvePillAction = (item?: NavItem): PillFunc => {
     return 'showCalendarSpread';
   }
 
+  if (
+    item.func === 'showInterCommoditySpread' ||
+    item.key === 'inter-commodity-arbitrage'
+  ) {
+    return 'showInterCommoditySpread';
+  }
+
   if (item.func === 'comingSoon') {
     return 'comingSoon';
   }
