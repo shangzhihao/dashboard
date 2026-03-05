@@ -2,46 +2,14 @@ import { Button, DatePicker, Select } from 'antd';
 import dayjs from 'dayjs';
 import type { ReactNode } from 'react';
 import { filterCategoryOption, resolveSecondChoice } from './helpers';
-
-type Translate = (key: string, options?: Record<string, unknown>) => string;
-
-type SelectOption = { value: string; label: string };
-type CategoryOption = SelectOption & { searchText: string };
+import type { DashboardControlsModel } from './models';
 
 type DashboardChartControlsProps = {
-  isTermStructureView: boolean;
-  isCalendarSpreadView: boolean;
-  isInterCommoditySpreadView: boolean;
-  termStructureDateInput: string;
-  setTermStructureDateInput: (value: string) => void;
-  setTermStructureDateApplied: (value: string) => void;
-  calendarNearContractInput: string;
-  calendarFarContractInput: string;
-  setCalendarNearContractInput: (value: string) => void;
-  setCalendarFarContractInput: (value: string) => void;
-  setCalendarNearContractApplied: (value: string) => void;
-  setCalendarFarContractApplied: (value: string) => void;
-  interCommodityLeftCategoryInput: string;
-  interCommodityRightCategoryInput: string;
-  setInterCommodityLeftCategoryInput: (value: string) => void;
-  setInterCommodityRightCategoryInput: (value: string) => void;
-  setInterCommodityLeftCategoryApplied: (value: string) => void;
-  setInterCommodityRightCategoryApplied: (value: string) => void;
-  interCommodityLeftContractInput: string;
-  interCommodityRightContractInput: string;
-  setInterCommodityLeftContractInput: (value: string) => void;
-  setInterCommodityRightContractInput: (value: string) => void;
-  setInterCommodityLeftContractApplied: (value: string) => void;
-  setInterCommodityRightContractApplied: (value: string) => void;
-  activeContractKeys: string[];
-  activeContractOptions: SelectOption[];
-  categoryOptions: CategoryOption[];
-  setActiveCategoryKey: (value: string) => void;
-  translate: Translate;
+  model: DashboardControlsModel;
 };
 
 type TermStructureControlsProps = Pick<
-  DashboardChartControlsProps,
+  DashboardControlsModel,
   'termStructureDateInput' | 'setTermStructureDateInput' | 'setTermStructureDateApplied' | 'translate'
 >;
 
@@ -75,7 +43,7 @@ const TermStructureControls = ({
 );
 
 type CalendarSpreadControlsProps = Pick<
-  DashboardChartControlsProps,
+  DashboardControlsModel,
   | 'calendarNearContractInput'
   | 'calendarFarContractInput'
   | 'setCalendarNearContractInput'
@@ -141,7 +109,7 @@ const CalendarSpreadControls = ({
 );
 
 type InterCommoditySpreadControlsProps = Pick<
-  DashboardChartControlsProps,
+  DashboardControlsModel,
   | 'interCommodityLeftCategoryInput'
   | 'interCommodityRightCategoryInput'
   | 'setInterCommodityLeftCategoryInput'
@@ -254,15 +222,15 @@ const InterCommoditySpreadControls = ({
   </>
 );
 
-const DashboardChartControls = (props: DashboardChartControlsProps): ReactNode => {
-  if (props.isTermStructureView) {
-    return <TermStructureControls {...props} />;
+const DashboardChartControls = ({ model }: DashboardChartControlsProps): ReactNode => {
+  if (model.isTermStructureView) {
+    return <TermStructureControls {...model} />;
   }
-  if (props.isCalendarSpreadView) {
-    return <CalendarSpreadControls {...props} />;
+  if (model.isCalendarSpreadView) {
+    return <CalendarSpreadControls {...model} />;
   }
-  if (props.isInterCommoditySpreadView) {
-    return <InterCommoditySpreadControls {...props} />;
+  if (model.isInterCommoditySpreadView) {
+    return <InterCommoditySpreadControls {...model} />;
   }
   return undefined;
 };

@@ -1,79 +1,24 @@
 import { Layout } from 'antd';
-import type { MenuProps } from 'antd';
 import ChartPanel from '../../components/ChartPanel';
 import ComingSoonPanel from '../../components/ComingSoonPanel';
 import MonthlyChangePanel from '../../components/MonthlyChangePanel';
 import PillNav from '../../components/PillNav';
 import SideMenu from '../../components/SideMenu';
 import TopNav from '../../components/TopNav';
-import type { ChartAxesConfig, ChartDatum, ChartSeriesConfig, ChartTitlesConfig } from '../../types/chart';
-import type { MonthlyChangeRow } from '../../types/monthlyChange';
-import type { NavItem } from '../../types/nav';
 import DashboardChartControls from './DashboardChartControls';
+import type {
+  DashboardChartModel,
+  DashboardHeaderModel,
+  DashboardNavigationModel,
+  DashboardPageModel,
+  DashboardSidebarModel,
+  DashboardViewFlags,
+} from './models';
 
 const { Header, Sider, Content } = Layout;
 
-type Translate = (key: string, options?: Record<string, unknown>) => string;
-
 type DashboardPageProps = {
-  translate: Translate;
-  brandLogoText: string;
-  userAvatarText: string;
-  siderWidth: number;
-  topNav: NavItem[];
-  activeTopKey: string;
-  setActiveTopKey: (value: string) => void;
-  sideMenuItems: NonNullable<MenuProps['items']>;
-  sideOpenKeys: string[];
-  setSideOpenKeys: (keys: string[]) => void;
-  activeCategoryKey: string;
-  setActiveCategoryKey: (value: string) => void;
-  pillNav: NavItem[];
-  activePillKey: string;
-  handlePillClick: (item: NavItem) => void;
-  activePillName: string;
-  activeTopName: string;
-  isFuturesView: boolean;
-  isSeasonalChartView: boolean;
-  isMonthlyChangeView: boolean;
-  isTermStructureView: boolean;
-  isCalendarSpreadView: boolean;
-  isInterCommoditySpreadView: boolean;
-  chartData: ChartDatum[];
-  displayChartSeries: ChartSeriesConfig[];
-  displayChartAxes: ChartAxesConfig;
-  displayChartTitles: ChartTitlesConfig;
-  activeContractOptions: Array<{ value: string; label: string }>;
-  contractValue: string;
-  metricOptions: Array<{ value: string; label: string }>;
-  effectiveMetricType: string;
-  setContractValue: (value: string) => void;
-  setMetricType: (value: string) => void;
-  termStructureDateInput: string;
-  setTermStructureDateInput: (value: string) => void;
-  setTermStructureDateApplied: (value: string) => void;
-  calendarNearContractInput: string;
-  calendarFarContractInput: string;
-  setCalendarNearContractInput: (value: string) => void;
-  setCalendarFarContractInput: (value: string) => void;
-  setCalendarNearContractApplied: (value: string) => void;
-  setCalendarFarContractApplied: (value: string) => void;
-  interCommodityLeftCategoryInput: string;
-  interCommodityRightCategoryInput: string;
-  setInterCommodityLeftCategoryInput: (value: string) => void;
-  setInterCommodityRightCategoryInput: (value: string) => void;
-  setInterCommodityLeftCategoryApplied: (value: string) => void;
-  setInterCommodityRightCategoryApplied: (value: string) => void;
-  interCommodityLeftContractInput: string;
-  interCommodityRightContractInput: string;
-  setInterCommodityLeftContractInput: (value: string) => void;
-  setInterCommodityRightContractInput: (value: string) => void;
-  setInterCommodityLeftContractApplied: (value: string) => void;
-  setInterCommodityRightContractApplied: (value: string) => void;
-  activeContractKeys: string[];
-  categoryOptions: Array<{ value: string; label: string; searchText: string }>;
-  monthlyChangeTitle: string;
-  monthlyChangeRows: MonthlyChangeRow[];
+  model: DashboardPageModel;
 };
 
 const DashboardHeader = ({
@@ -83,15 +28,7 @@ const DashboardHeader = ({
   topNav,
   activeTopKey,
   setActiveTopKey,
-}: Pick<
-  DashboardPageProps,
-  | 'translate'
-  | 'brandLogoText'
-  | 'userAvatarText'
-  | 'topNav'
-  | 'activeTopKey'
-  | 'setActiveTopKey'
->) => (
+}: DashboardHeaderModel) => (
   <Header className="app-header">
     <div className="header-left">
       <div className="brand">
@@ -106,78 +43,129 @@ const DashboardHeader = ({
   </Header>
 );
 
-const DashboardMainPanel = (props: DashboardPageProps) => {
-  if (props.isMonthlyChangeView) {
+const DashboardMainPanel = ({
+  views,
+  chart,
+  controls,
+  monthly,
+  navigation,
+}: {
+  views: DashboardViewFlags;
+  chart: DashboardChartModel;
+  controls: DashboardPageModel['controls'];
+  monthly: DashboardPageModel['monthly'];
+  navigation: DashboardNavigationModel;
+}) => {
+  if (views.isMonthlyChangeView) {
     return (
       <MonthlyChangePanel
-        title={props.monthlyChangeTitle}
-        rows={props.monthlyChangeRows}
-        contractOptions={props.activeContractOptions}
-        contractValue={props.contractValue}
-        onContractChange={props.setContractValue}
+        title={monthly.monthlyChangeTitle}
+        rows={monthly.monthlyChangeRows}
+        contractOptions={monthly.contractOptions}
+        contractValue={monthly.contractValue}
+        onContractChange={monthly.setContractValue}
       />
     );
   }
 
-  if (!props.isSeasonalChartView && !props.isTermStructureView && !props.isCalendarSpreadView && !props.isInterCommoditySpreadView) {
-    return <ComingSoonPanel title={props.activePillName} />;
+  if (
+    !views.isSeasonalChartView &&
+    !views.isTermStructureView &&
+    !views.isCalendarSpreadView &&
+    !views.isInterCommoditySpreadView
+  ) {
+    return <ComingSoonPanel title={navigation.activePillName} />;
   }
 
-  const disableFilterSelectors = props.isTermStructureView || props.isCalendarSpreadView || props.isInterCommoditySpreadView;
+  const disableFilterSelectors =
+    views.isTermStructureView || views.isCalendarSpreadView || views.isInterCommoditySpreadView;
+
   return (
     <ChartPanel
-      chartData={props.chartData}
-      chartSeries={props.displayChartSeries}
-      chartAxes={props.displayChartAxes}
-      chartTitles={props.displayChartTitles}
-      contractOptions={disableFilterSelectors ? [] : props.activeContractOptions}
-      contractValue={disableFilterSelectors ? '' : props.contractValue}
-      metricOptions={disableFilterSelectors ? [] : props.metricOptions}
-      metricValue={props.effectiveMetricType}
-      onContractChange={props.setContractValue}
+      chartData={chart.chartData}
+      chartSeries={chart.displayChartSeries}
+      chartAxes={chart.displayChartAxes}
+      chartTitles={chart.displayChartTitles}
+      contractOptions={disableFilterSelectors ? [] : chart.activeContractOptions}
+      contractValue={disableFilterSelectors ? '' : chart.contractValue}
+      metricOptions={disableFilterSelectors ? [] : chart.metricOptions}
+      metricValue={chart.effectiveMetricType}
+      onContractChange={chart.setContractValue}
       onMetricChange={(value) => {
         if (!disableFilterSelectors) {
-          props.setMetricType(value);
+          chart.setMetricType(value);
         }
       }}
-      controls={<DashboardChartControls {...props} />}
+      controls={<DashboardChartControls model={controls} />}
     />
   );
 };
 
-const FuturesView = (props: DashboardPageProps) => (
+const FuturesView = ({
+  header,
+  sidebar,
+  navigation,
+  views,
+  chart,
+  controls,
+  monthly,
+}: DashboardPageModel) => (
   <>
-    <Sider width={props.siderWidth} className="app-sider">
-      <div className="side-header">{props.translate('side.header')}</div>
+    <Sider width={sidebar.siderWidth} className="app-sider">
+      <div className="side-header">{header.translate('side.header')}</div>
       <SideMenu
-        items={props.sideMenuItems}
-        openKeys={props.sideOpenKeys}
-        onOpenChange={props.setSideOpenKeys}
-        selectedKey={props.activeCategoryKey}
-        onSelectKey={props.setActiveCategoryKey}
+        items={sidebar.sideMenuItems}
+        openKeys={sidebar.sideOpenKeys}
+        onOpenChange={sidebar.setSideOpenKeys}
+        selectedKey={sidebar.activeCategoryKey}
+        onSelectKey={sidebar.setActiveCategoryKey}
       />
     </Sider>
 
     <Content className="app-content">
-      <PillNav items={props.pillNav} activeKey={props.activePillKey} onClick={props.handlePillClick} />
-      <DashboardMainPanel {...props} />
+      <PillNav
+        items={navigation.pillNav}
+        activeKey={navigation.activePillKey}
+        onClick={navigation.handlePillClick}
+      />
+      <DashboardMainPanel
+        views={views}
+        chart={chart}
+        controls={controls}
+        monthly={monthly}
+        navigation={navigation}
+      />
     </Content>
   </>
 );
 
-const DashboardPage = (props: DashboardPageProps) => (
+const DashboardPage = ({ model }: DashboardPageProps) => (
   <Layout className="app-layout">
     <DashboardHeader
-      translate={props.translate}
-      brandLogoText={props.brandLogoText}
-      userAvatarText={props.userAvatarText}
-      topNav={props.topNav}
-      activeTopKey={props.activeTopKey}
-      setActiveTopKey={props.setActiveTopKey}
+      translate={model.header.translate}
+      brandLogoText={model.header.brandLogoText}
+      userAvatarText={model.header.userAvatarText}
+      topNav={model.header.topNav}
+      activeTopKey={model.header.activeTopKey}
+      setActiveTopKey={model.header.setActiveTopKey}
     />
 
     <Layout className="app-shell">
-      {props.isFuturesView ? <FuturesView {...props} /> : <Content className="app-content"><ComingSoonPanel title={props.activeTopName} /></Content>}
+      {model.navigation.isFuturesView ? (
+        <FuturesView
+          header={model.header}
+          sidebar={model.sidebar}
+          navigation={model.navigation}
+          views={model.views}
+          chart={model.chart}
+          controls={model.controls}
+          monthly={model.monthly}
+        />
+      ) : (
+        <Content className="app-content">
+          <ComingSoonPanel title={model.navigation.activeTopName} />
+        </Content>
+      )}
     </Layout>
   </Layout>
 );
