@@ -9,4 +9,5 @@ export type PillFunc =
   | 'showSeasonChart'
   | 'showMonthlyChangeTable'
   | 'showTermStructure'
+  | 'showCalendarSpread'
   | 'comingSoon';

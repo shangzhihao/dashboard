@@ -45,7 +45,7 @@
       "key": "calendar-arbitrage",
       "name": "跨期套利",
       "nameKey": "pill.calendarArbitrage",
-      "func": "comingSoon"
+      "func": "showCalendarSpread"
     },
     {
       "key": "inter-commodity-arbitrage",

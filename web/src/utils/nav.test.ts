@@ -66,4 +66,13 @@ describe('resolvePillAction', () => {
       'showTermStructure',
     );
   });
+
+  test('returns showCalendarSpread for matching func or key', () => {
+    expect(resolvePillAction({ key: 'calendar-arbitrage', name: 'Calendar Arbitrage' })).toBe(
+      'showCalendarSpread',
+    );
+    expect(resolvePillAction({ key: 'x', name: 'X', func: 'showCalendarSpread' })).toBe(
+      'showCalendarSpread',
+    );
+  });
 });

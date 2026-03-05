@@ -72,6 +72,9 @@ const zh = {
           price: '价格',
           positions: '持仓(手)',
         },
+        right: {
+          spread: '价差(元)',
+        },
       },
       series: {
         net: '净持仓',
@@ -89,6 +92,15 @@ const zh = {
           threeMonthsAgo: '三个月前',
           sixMonthsAgo: '六个月前',
           yearAgo: '一年前',
+        },
+      },
+      calendarSpread: {
+        nearContract: '近月合约',
+        farContract: '远月合约',
+        spread: '价差',
+        series: {
+          near: '近月合约收盘价',
+          spread: '价差',
         },
       },
     },

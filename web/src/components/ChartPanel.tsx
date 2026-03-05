@@ -63,6 +63,42 @@ const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
   );
 };
 
+const computeAxisDomain = (
+  chartData: ChartDatum[],
+  visibleSeries: ReturnType<typeof normalizeSeriesConfig>,
+  axisId: 'left' | 'right',
+) => {
+  const values: number[] = [];
+  chartData.forEach((row) => {
+    visibleSeries
+      .filter((series) => series.yAxisId === axisId)
+      .forEach((series) => {
+        const raw = row[series.key];
+        const value =
+          typeof raw === 'number'
+            ? raw
+            : typeof raw === 'string'
+              ? Number(raw)
+              : NaN;
+        if (Number.isFinite(value)) {
+          values.push(value);
+        }
+      });
+  });
+
+  if (values.length === 0) {
+    return undefined;
+  }
+
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const range = maxValue - minValue;
+  const padding = range === 0 ? Math.max(Math.abs(maxValue) * 0.05, 1) : range * 0.08;
+  const nextMin = minValue - padding;
+  const nextMax = maxValue + padding;
+  return [nextMin, nextMax] as [number, number];
+};
+
 const ChartPanel = ({
   chartData,
   chartSeries,
@@ -109,6 +145,11 @@ const ChartPanel = ({
     chartAxes.left?.label,
     'chart.axes.left.label',
   );
+  const rightAxisLabel = resolveText(
+    chartAxes.right?.labelKey,
+    chartAxes.right?.label,
+    'chart.axes.right.spread',
+  );
   const formatXAxisTick = (value: string | number) => {
     const text = String(value);
     if (text === 'near') {
@@ -121,17 +162,18 @@ const ChartPanel = ({
     if (/^\d{2}-\d{2}$/.test(text)) {
       return text;
     }
-    const match = text.match(/^\d{4}-(\d{2})-(\d{2})/);
+    const match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (match) {
-      return `${match[1]}-${match[2]}`;
+      return `${match[1]}-${match[2]}-${match[3]}`;
     }
     const parsed = new Date(text);
     if (Number.isNaN(parsed.getTime())) {
       return text;
     }
+    const year = String(parsed.getFullYear());
     const month = String(parsed.getMonth() + 1).padStart(2, '0');
     const day = String(parsed.getDate()).padStart(2, '0');
-    return `${month}-${day}`;
+    return `${year}-${month}-${day}`;
   };
   const chartTitle = resolveText(
     chartTitles.chartKey,
@@ -144,35 +186,20 @@ const ChartPanel = ({
     [hiddenSeriesKeys, resolvedSeries],
   );
 
-  const yAxisDomain = useMemo<[number, number] | undefined>(() => {
-    const values: number[] = [];
-    chartData.forEach((row) => {
-      visibleSeries.forEach((series) => {
-        const raw = row[series.key];
-        const value =
-          typeof raw === 'number'
-            ? raw
-            : typeof raw === 'string'
-              ? Number(raw)
-              : NaN;
-        if (Number.isFinite(value)) {
-          values.push(value);
-        }
-      });
-    });
-
-    if (values.length === 0) {
-      return undefined;
-    }
-
-    const minValue = Math.min(...values);
-    const maxValue = Math.max(...values);
-    const range = maxValue - minValue;
-    const padding = range === 0 ? Math.max(Math.abs(maxValue) * 0.05, 1) : range * 0.08;
-    const nextMin = minValue - padding;
-    const nextMax = maxValue + padding;
-    return [nextMin, nextMax];
-  }, [chartData, visibleSeries]);
+  const leftAxisDomain = useMemo<[number, number] | undefined>(
+    () => computeAxisDomain(chartData, visibleSeries, 'left'),
+    [chartData, visibleSeries],
+  );
+  const rightAxisDomain = useMemo<[number, number] | undefined>(
+    () => computeAxisDomain(chartData, visibleSeries, 'right'),
+    [chartData, visibleSeries],
+  );
+  const showRightAxis = useMemo(
+    () =>
+      visibleSeries.some((series) => series.yAxisId === 'right') ||
+      Boolean(chartAxes.right?.label || chartAxes.right?.labelKey),
+    [chartAxes.right?.label, chartAxes.right?.labelKey, visibleSeries],
+  );
 
   const yAxisTickFormatter = useMemo(
     () => (value: string | number) => axisTickFormatter(value, i18n.language),
@@ -295,7 +322,7 @@ const ChartPanel = ({
                 tick={{ fill: '#7a8199', fontSize: 11 }}
                 width={84}
                 tickMargin={8}
-                domain={yAxisDomain}
+                domain={leftAxisDomain}
                 tickFormatter={yAxisTickFormatter}
                 label={{
                   value: leftAxisLabel,
@@ -305,6 +332,24 @@ const ChartPanel = ({
                   fill: '#a0a7bd',
                 }}
               />
+              {showRightAxis ? (
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fill: '#7a8199', fontSize: 11 }}
+                  width={84}
+                  tickMargin={8}
+                  domain={rightAxisDomain}
+                  tickFormatter={yAxisTickFormatter}
+                  label={{
+                    value: rightAxisLabel,
+                    angle: 90,
+                    position: 'insideRight',
+                    dx: -6,
+                    fill: '#a0a7bd',
+                  }}
+                />
+              ) : null}
               <Tooltip content={<ChartTooltip />} />
               <Legend
                 verticalAlign="top"
