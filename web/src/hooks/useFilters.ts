@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isRecord } from '../utils/guards';
+import { useJsonResource } from './useJsonResource';
 
 type FilterMetric = {
   key: string;
@@ -82,52 +83,33 @@ const resolveLabel = (
 
 export const useFilters = (filtersUrl: string) => {
   const { t } = useTranslation();
-  const [metrics, setMetrics] = useState<FilterMetric[]>([]);
-  const [contracts, setContracts] = useState<FilterContract[]>([]);
-  const [defaultMetricKey, setDefaultMetricKey] = useState<string>('');
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadFilters = async () => {
-      try {
-        const response = await fetch(filtersUrl, { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error(`Failed to load filters: ${response.status}`);
-        }
-        const payload: unknown = await response.json();
-        const metricsPayload =
-          isRecord(payload) && Array.isArray(payload.metrics) ? payload.metrics : [];
-        const contractsPayload =
-          isRecord(payload) && Array.isArray(payload.contracts) ? payload.contracts : [];
-        const defaultMetric =
-          isRecord(payload) && typeof payload.defaultMetric === 'string'
-            ? payload.defaultMetric
-            : '';
-
-        if (isMounted) {
-          const nextMetrics = normalizeMetrics(metricsPayload);
-          const nextContracts = normalizeContracts(contractsPayload);
-          setMetrics(nextMetrics);
-          setContracts(nextContracts);
-          setDefaultMetricKey(defaultMetric || nextMetrics[0]?.key || '');
-        }
-      } catch (error) {
-        console.warn(error);
-        if (isMounted) {
-          setMetrics([]);
-          setContracts([]);
-          setDefaultMetricKey('');
-        }
-      }
-    };
-
-    loadFilters();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [filtersUrl]);
+  const loaded = useJsonResource({
+    url: filtersUrl,
+    emptyState: {
+      metrics: [] as FilterMetric[],
+      contracts: [] as FilterContract[],
+      defaultMetricKey: '',
+    },
+    errorPrefix: 'Failed to load filters',
+    mapPayload: (payload) => {
+      const metricsPayload =
+        isRecord(payload) && Array.isArray(payload.metrics) ? payload.metrics : [];
+      const contractsPayload =
+        isRecord(payload) && Array.isArray(payload.contracts) ? payload.contracts : [];
+      const defaultMetric =
+        isRecord(payload) && typeof payload.defaultMetric === 'string'
+          ? payload.defaultMetric
+          : '';
+      const nextMetrics = normalizeMetrics(metricsPayload);
+      const nextContracts = normalizeContracts(contractsPayload);
+      return {
+        metrics: nextMetrics,
+        contracts: nextContracts,
+        defaultMetricKey: defaultMetric || nextMetrics[0]?.key || '',
+      };
+    },
+  });
+  const { metrics, contracts, defaultMetricKey } = loaded;
 
   const metricOptions = useMemo(
     () =>

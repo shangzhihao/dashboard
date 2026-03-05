@@ -3,6 +3,7 @@ import type { MenuProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { normalizeLanguage } from '../i18n';
 import { isRecord } from '../utils/guards';
+import { useJsonResource } from './useJsonResource';
 
 type CategoryItem = {
   key: string;
@@ -151,44 +152,36 @@ export const useCategories = (categoriesUrl: string) => {
   const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
   const rootKeys = useMemo(() => rawItems.map((item) => item.key), [rawItems]);
 
+  const loaded = useJsonResource({
+    url: categoriesUrl,
+    emptyState: {
+      rawItems: [] as CategoryItem[],
+      firstOpenKey: '',
+      firstLeafKey: '',
+    },
+    errorPrefix: 'Failed to load categories',
+    mapPayload: (payload) => {
+      const items = Array.isArray(payload)
+        ? payload
+        : payload &&
+            typeof payload === 'object' &&
+            Array.isArray((payload as { items?: unknown }).items)
+          ? (payload as { items: unknown[] }).items
+          : [];
+      const nextItems = normalizeCategoryItems(items);
+      return {
+        rawItems: nextItems,
+        firstOpenKey: nextItems[0]?.key || '',
+        firstLeafKey: findFirstLeafKey(nextItems),
+      };
+    },
+  });
+
   useEffect(() => {
-    let isMounted = true;
-
-    const loadCategories = async () => {
-      try {
-        const response = await fetch(categoriesUrl, { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error(`Failed to load categories: ${response.status}`);
-        }
-        const payload: unknown = await response.json();
-        const items = Array.isArray(payload)
-          ? payload
-          : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown }).items)
-            ? (payload as { items: unknown[] }).items
-            : [];
-        if (isMounted) {
-          const nextItems = normalizeCategoryItems(items);
-          const firstOpenKey = nextItems[0]?.key;
-          setRawItems(nextItems);
-          setSideOpenKeysState(firstOpenKey ? [firstOpenKey] : []);
-          setActiveCategoryKey((prev) => prev || findFirstLeafKey(nextItems));
-        }
-      } catch (error) {
-        console.warn(error);
-        if (isMounted) {
-          setRawItems([]);
-          setSideOpenKeysState([]);
-          setActiveCategoryKey('');
-        }
-      }
-    };
-
-    loadCategories();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [categoriesUrl]);
+    setRawItems(loaded.rawItems);
+    setSideOpenKeysState(loaded.firstOpenKey ? [loaded.firstOpenKey] : []);
+    setActiveCategoryKey((prev) => prev || loaded.firstLeafKey);
+  }, [loaded]);
 
   const sideMenuItems: NonNullable<MenuProps['items']> = useMemo(
     () => buildMenuItems(rawItems, t, language),

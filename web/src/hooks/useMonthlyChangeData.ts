@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
 import type { MonthlyChangeRow } from '../types/monthlyChange';
 import { isRecord } from '../utils/guards';
+import { useJsonResource } from './useJsonResource';
 
 const normalizeRow = (value: unknown): MonthlyChangeRow | null => {
   if (!isRecord(value)) {
@@ -45,46 +45,17 @@ const normalizeRow = (value: unknown): MonthlyChangeRow | null => {
 };
 
 export const useMonthlyChangeData = (url: string) => {
-  const [rows, setRows] = useState<MonthlyChangeRow[]>([]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const load = async () => {
-      try {
-        if (!url) {
-          if (isMounted) {
-            setRows([]);
-          }
-          return;
-        }
-        const response = await fetch(url, { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error(`Failed to load monthly change data: ${response.status}`);
-        }
-        const payload: unknown = await response.json();
-        const items =
-          isRecord(payload) && Array.isArray(payload.items) ? payload.items : [];
-        const normalized = items
-          .map((item) => normalizeRow(item))
-          .filter((item): item is MonthlyChangeRow => item !== null);
-        if (isMounted) {
-          setRows(normalized);
-        }
-      } catch (error) {
-        console.warn(error);
-        if (isMounted) {
-          setRows([]);
-        }
-      }
-    };
-
-    load();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [url]);
-
-  return { rows };
+  return useJsonResource({
+    url,
+    emptyState: { rows: [] as MonthlyChangeRow[] },
+    errorPrefix: 'Failed to load monthly change data',
+    mapPayload: (payload) => {
+      const items =
+        isRecord(payload) && Array.isArray(payload.items) ? payload.items : [];
+      const normalized = items
+        .map((item) => normalizeRow(item))
+        .filter((item): item is MonthlyChangeRow => item !== null);
+      return { rows: normalized };
+    },
+  });
 };
